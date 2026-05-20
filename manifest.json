@@ -1,24 +1,14 @@
 {
   "name": "Merigo Tresses Finance",
   "short_name": "MT Finance",
-  "description": "Business finance tracker for Merigo Tresses",
+  "description": "Complete business tracker for Merigo Tresses",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#12090A",
+  "background_color": "#0D0608",
   "theme_color": "#C9841A",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    {"src": "logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
   ]
 }
