@@ -28,7 +28,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;font-size:16px;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 h1,h2,h3{font-family:'Playfair Display',serif;}
 button,input,select,textarea{font-family:'DM Sans',sans-serif;font-size:16px!important;}
 img{display:block;max-width:100%;}
@@ -62,8 +62,8 @@ img{display:block;max-width:100%;}
 .lock-icon{font-size:3rem;text-align:center;margin-bottom:8px;}
 
 /* ── MAIN APP ── */
-#app{display:none;min-height:100vh;padding-bottom:calc(var(--nav) + 24px);}
-.page{display:none;padding:14px 14px 40px;animation:pgIn .15s ease;}
+#app{display:none;min-height:100vh;padding-bottom:calc(var(--nav) + 60px);}
+.page{display:none;padding:14px 14px 100px;animation:pgIn .15s ease;}
 #app.show{display:block;}
 
 /* ── HEADER ── */
@@ -82,7 +82,7 @@ img{display:block;max-width:100%;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ── BOTTOM NAV ── */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;height:var(--nav);border-top:1px solid rgba(201,132,26,.1);z-index:400;padding-bottom:env(safe-area-inset-bottom);}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;height:calc(var(--nav) + env(safe-area-inset-bottom));border-top:1px solid rgba(201,132,26,.1);z-index:400;padding-bottom:env(safe-area-inset-bottom);}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:none;background:none;color:rgba(255,255,255,.3);cursor:pointer;gap:2px;font-size:7.5px;font-weight:500;transition:color .15s;padding:5px 1px 4px;letter-spacing:0;min-width:0;overflow:hidden;}
 .nb svg{width:17px;height:17px;stroke-width:1.8;flex-shrink:0;}
 .nb.active{color:var(--gold);}
@@ -104,7 +104,7 @@ img{display:block;max-width:100%;}
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px;min-width:0;}
 .card.span2{grid-column:span 2;}
 .clabel{font-size:.65rem;color:var(--muted);font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cval{font-size:1.15rem;font-weight:700;font-family:'Playfair Display',serif;line-height:1.15;word-break:break-word;}
+.cval{font-size:clamp(.95rem,3.5vw,1.2rem);font-weight:700;font-family:'Playfair Display',serif;line-height:1.15;word-break:break-word;}
 .cval.g{color:var(--green);}
 .cval.r{color:var(--red);}
 .cval.o{color:var(--gold);}
@@ -259,7 +259,7 @@ img{display:block;max-width:100%;}
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none;align-items:flex-end;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 48px;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease;-webkit-overflow-scrolling:touch;}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 52px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;-webkit-overflow-scrolling:touch;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
 .modal-title{font-size:1.05rem;font-weight:700;margin-bottom:16px;font-family:'Playfair Display',serif;}
@@ -269,6 +269,12 @@ img{display:block;max-width:100%;}
 .empty{text-align:center;padding:36px 20px;color:var(--muted);}
 .empty-ico{font-size:2.2rem;margin-bottom:8px;}
 .empty p{font-size:.85rem;line-height:1.6;}
+
+/* ── TOUCH & SCROLL FIXES ── */
+button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(201,132,26,0.15);}
+button:active{opacity:.75;}
+.page{overflow-y:visible;}
+html{overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:calc(var(--nav)+12px);left:50%;transform:translateX(-50%) translateY(8px);background:var(--dark);color:#fff;padding:10px 20px;border-radius:50px;font-size:.82rem;opacity:0;pointer-events:none;transition:all .25s;z-index:600;white-space:nowrap;max-width:90vw;text-align:center;}
@@ -340,10 +346,10 @@ img{display:block;max-width:100%;}
       <button class="ptab" onclick="setPeriod('yearly',this)">Year</button>
     </div>
     <div class="grid2">
-      <div class="card"><div class="clabel">💰 Earnings</div><div class="cval g" id="d-income">¥0</div><div class="csub" id="d-income-sub"></div></div>
-      <div class="card"><div class="clabel">💸 Expenses</div><div class="cval r" id="d-expense">¥0</div></div>
-      <div class="card"><div class="clabel">📈 Net Profit</div><div class="cval o" id="d-profit">¥0</div><div class="csub" id="d-hair-cost"></div></div>
-      <div class="card"><div class="clabel">🧾 Tax Reserve</div><div class="cval b" id="d-tax">¥0</div><div class="csub">12% of profit</div></div>
+      <div class="card"><div class="clabel">Earnings</div><div class="cval g" id="d-income">¥0</div><div class="csub" id="d-income-sub"></div></div>
+      <div class="card"><div class="clabel">Expenses</div><div class="cval r" id="d-expense">¥0</div></div>
+      <div class="card"><div class="clabel">Net Profit</div><div class="cval o" id="d-profit">¥0</div><div class="csub" id="d-hair-cost"></div></div>
+      <div class="card"><div class="clabel">Tax Reserve</div><div class="cval b" id="d-tax">¥0</div><div class="csub">12% of profit</div></div>
     </div>
     <div class="banner">
       <div class="banner-ico">🏦</div>
@@ -371,7 +377,7 @@ img{display:block;max-width:100%;}
 
   <!-- ADD -->
   <div class="page" id="pg-add">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div class="form-box">
       <h3>Add Transaction</h3>
       <div class="type-tog">
@@ -440,7 +446,7 @@ img{display:block;max-width:100%;}
 
   <!-- LOG -->
   <div class="page" id="pg-log">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div class="ptabs">
       <button class="ptab active" onclick="setLogPeriod('daily',this)">Today</button>
       <button class="ptab" onclick="setLogPeriod('weekly',this)">Week</button>
@@ -457,7 +463,7 @@ img{display:block;max-width:100%;}
 
   <!-- APPOINTMENTS -->
   <div class="page" id="pg-appt">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
       <div class="ptabs" style="margin-bottom:0;flex:1;margin-right:10px">
         <button class="ptab active" onclick="setApptFilter('upcoming',this)">Upcoming</button>
@@ -472,7 +478,7 @@ img{display:block;max-width:100%;}
 
   <!-- CLIENTS -->
   <div class="page" id="pg-clients">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
       <div style="font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Clients</div>
       <button class="btn-sm" onclick="openModal('clientModal')">+ Add Client</button>
@@ -483,7 +489,7 @@ img{display:block;max-width:100%;}
 
   <!-- MORE (Stock, Products, Goals, Reports) -->
   <div class="page" id="pg-more">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="font-size:1.1rem;font-weight:700;font-family:'Playfair Display',serif;margin-bottom:6px;color:var(--gold)">More Features</div>
     <!-- Annual goal setting -->
     <div class="card span2" style="margin-bottom:12px;display:flex;align-items:center;gap:12px">
@@ -520,7 +526,7 @@ img{display:block;max-width:100%;}
 
   <!-- HAIR STOCK FULL PAGE -->
   <div class="page" id="pg-stock">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
       <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">📦 Hair Stock</div>
@@ -533,7 +539,7 @@ img{display:block;max-width:100%;}
 
   <!-- PRODUCTS FULL PAGE -->
   <div class="page" id="pg-products">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
       <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">🛒 Products Bought</div>
@@ -549,7 +555,7 @@ img{display:block;max-width:100%;}
 
   <!-- SAVINGS GOALS FULL PAGE -->
   <div class="page" id="pg-goals">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
       <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">🎯 Savings Goals</div>
@@ -561,7 +567,7 @@ img{display:block;max-width:100%;}
 
   <!-- REPORTS FULL PAGE -->
   <div class="page" id="pg-reports">
-    <div style="padding-top:13px">
+    <div style="padding-top:13px;padding-bottom:20px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
       <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">📊 Monthly Reports</div>
@@ -737,7 +743,7 @@ img{display:block;max-width:100%;}
 
 <!-- RECEIPT MODAL -->
 <div class="modal-overlay" id="receiptModal">
-  <div class="modal" style="padding:0;overflow:hidden;border-radius:20px 20px 0 0">
+  <div class="modal" style="padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:20px 20px 0 0;max-height:92vh;">
     <div style="padding:16px 16px 0">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -746,49 +752,47 @@ img{display:block;max-width:100%;}
       </div>
     </div>
     <!-- RECEIPT PREVIEW -->
-    <div id="receiptCard" style="margin:0 14px 14px;background:#0D0608;border-radius:16px;padding:24px 20px;color:white;font-family:'DM Sans',sans-serif;">
+    <div id="receiptCard" style="margin:0 14px 14px;background:#FBF5EC;border:2px solid #C9841A;border-radius:16px;padding:20px;font-family:'DM Sans',sans-serif;">
       <!-- header -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(201,132,26,0.3)">
-        <img src="logo.png" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1.5px solid rgba(201,132,26,0.4)" crossorigin="anonymous"/>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid #C9841A">
+        <img src="logo.png" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1.5px solid #C9841A" crossorigin="anonymous"/>
         <div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:#C9841A">Merigo Tresses</div>
-          <div style="font-size:.7rem;color:rgba(255,255,255,.4)">Fukuoka, Japan · Hair Braiding Studio</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#C9841A">Merigo Tresses</div>
+          <div style="font-size:.68rem;color:#8A6C45">Fukuoka, Japan · Hair Braiding Studio</div>
         </div>
         <div style="margin-left:auto;text-align:right">
-          <div style="font-size:.6rem;color:rgba(255,255,255,.3);letter-spacing:.1em">RECEIPT</div>
-          <div style="font-size:.8rem;color:#F0A830;font-weight:700" id="r-number">#001</div>
+          <div style="font-size:.58rem;color:#aaa;letter-spacing:.1em">RECEIPT</div>
+          <div style="font-size:.8rem;color:#C9841A;font-weight:700" id="r-number">#001</div>
         </div>
       </div>
-      <div id="r-service" style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:white;margin-bottom:4px"></div>
-      <div id="r-client" style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:18px"></div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;padding:12px;background:rgba(255,255,255,.04);border-radius:10px" id="r-lines"></div>
-      <div style="border-top:1px solid rgba(201,132,26,0.3);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:.85rem;color:rgba(255,255,255,.5);letter-spacing:.06em">TOTAL PAID</div>
-        <div id="r-total" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#C9841A"></div>
+      <div id="r-service" style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#1A0C0E;margin-bottom:3px"></div>
+      <div id="r-client" style="font-size:.75rem;color:#8A6C45;margin-bottom:14px"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding:10px;background:white;border-radius:8px;border:1px solid rgba(201,132,26,0.15)" id="r-lines"></div>
+      <div style="border-top:2px solid #C9841A;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:.82rem;color:#8A6C45;letter-spacing:.05em;font-weight:600">TOTAL PAID</div>
+        <div id="r-total" style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;color:#C9841A"></div>
       </div>
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);font-size:.63rem;color:rgba(255,255,255,.2);text-align:center;line-height:1.7">
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(201,132,26,0.2);font-size:.62rem;color:#aaa;text-align:center;line-height:1.7">
         Cash payment received · Thank you for choosing Merigo Tresses! 💛<br/>
-        @merigo_tresses · WhatsApp: +49 170 612 8008 · LINE: +81 90 7101 9857
+        @merigo_tresses · WA: +49 170 612 8008 · LINE: +81 90 7101 9857
       </div>
     </div>
     <!-- ACTION BUTTONS -->
-    <div style="padding:0 14px 32px">
-      <button onclick="downloadReceiptPDF()" style="width:100%;padding:13px;border-radius:50px;border:none;background:linear-gradient(135deg,#C9841A,#F0A830);color:white;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px">
+    <div style="padding:0 14px 40px;background:var(--white)">
+      <button onclick="downloadReceiptPDF()" style="width:100%;padding:14px;border-radius:50px;border:none;background:linear-gradient(135deg,#C9841A,#F0A830);color:white;font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:10px;display:block;-webkit-tap-highlight-color:rgba(0,0,0,0.1)">
         📄 Download PDF Receipt
       </button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button onclick="shareReceipt('whatsapp')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:50px;border:none;background:#25D366;color:white;font-weight:600;font-size:.82rem;cursor:pointer">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <button onclick="shareReceipt('whatsapp')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:50px;border:none;background:#25D366;color:white;font-weight:600;font-size:.82rem;cursor:pointer">
           WhatsApp
         </button>
-        <button onclick="shareReceipt('line')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:50px;border:none;background:#06C755;color:white;font-weight:600;font-size:.82rem;cursor:pointer">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        <button onclick="shareReceipt('line')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:50px;border:none;background:#06C755;color:white;font-weight:600;font-size:.82rem;cursor:pointer">
           LINE
         </button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="shareReceipt('copy')" style="padding:11px;border-radius:50px;border:1.5px solid var(--border);background:white;color:var(--text);font-weight:600;font-size:.82rem;cursor:pointer">📋 Copy Text</button>
-        <button onclick="shareReceipt('native')" style="padding:11px;border-radius:50px;border:none;background:var(--dark);color:white;font-weight:600;font-size:.82rem;cursor:pointer">📤 Share</button>
+        <button onclick="shareReceipt('copy')" style="padding:12px;border-radius:50px;border:1.5px solid var(--border);background:white;color:var(--text);font-weight:600;font-size:.82rem;cursor:pointer">📋 Copy Text</button>
+        <button onclick="shareReceipt('native')" style="padding:12px;border-radius:50px;border:none;background:var(--dark);color:white;font-weight:600;font-size:.82rem;cursor:pointer">📤 Share</button>
       </div>
     </div>
   </div>
@@ -1716,23 +1720,23 @@ function generateReceipt(){
     :fmtDateFull(t.date);
   let lines=`
     <div style="display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0">
-      <span style="color:rgba(255,255,255,.6)">${t.description}</span>
-      <span style="color:white;font-weight:600">${yen(t.amount)}</span>
+      <span style="color:#1A0C0E;font-weight:500">${t.description}</span>
+      <span style="color:#1E6B45;font-weight:700">${yen(t.amount)}</span>
     </div>`;
   if(t.hair_cost>0) lines+=`
-    <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:2px 0">
-      <span style="color:rgba(255,255,255,.35)">Hair extensions (${t.hair_packs} pack${t.hair_packs>1?'s':''})</span>
-      <span style="color:rgba(255,255,255,.35)">included</span>
+    <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:2px 0;border-top:1px solid #eee;margin-top:2px">
+      <span style="color:#8A6C45">Hair extensions (${t.hair_packs} pack${t.hair_packs>1?'s':''})</span>
+      <span style="color:#8A6C45">Included</span>
     </div>`;
   if(t.category) lines+=`
     <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:2px 0">
-      <span style="color:rgba(255,255,255,.35)">Service type</span>
-      <span style="color:rgba(255,255,255,.35)">${t.category}</span>
+      <span style="color:#8A6C45">Service type</span>
+      <span style="color:#8A6C45">${t.category}</span>
     </div>`;
   lines+=`
-    <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:4px 0;border-top:1px solid rgba(255,255,255,.06);margin-top:4px">
-      <span style="color:rgba(255,255,255,.35)">Payment method</span>
-      <span style="color:rgba(255,255,255,.35)">Cash</span>
+    <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:4px 0;border-top:1px solid #eee;margin-top:2px">
+      <span style="color:#8A6C45">Payment method</span>
+      <span style="color:#8A6C45">Cash 💴</span>
     </div>`;
   document.getElementById('r-lines').innerHTML=lines;
   document.getElementById('r-total').textContent=yen(t.amount);
