@@ -12,7 +12,7 @@
 <title>Merigo Tresses — Finance</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="jspdf.min.js"></script>
 <style>
 :root{
   --gold:#C9841A;--gold-l:#F0A830;--gold-p:#FDF3E3;
@@ -1746,159 +1746,142 @@ function generateReceipt(){
 async function downloadReceiptPDF(){
   const t=currentReceiptTx;
   if(!t){ toast('No receipt to download'); return; }
-  if(!window.jspdf){ toast('PDF library loading, try again in a moment...'); return; }
-  toast('Generating PDF...');
-  const { jsPDF }=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
-  const W=doc.internal.pageSize.getWidth();
-  const H=doc.internal.pageSize.getHeight();
 
-  // ── COLOUR PALETTE (bright & readable) ──
-  const white   = [255, 255, 255];
-  const offwhite= [250, 248, 245];
-  const gold    = [180, 110, 15];
-  const goldl   = [201, 132, 26];
-  const dark    = [20,  14,  8];
-  const gray    = [100, 90,  80];
-  const lgray   = [160, 148, 130];
-  const rowbg   = [245, 241, 234];
-  const altbg   = [238, 232, 220];
-  const green   = [30,  107, 69];
+  // Find and update button state
+  const btn = document.querySelector('button[onclick="downloadReceiptPDF()"]');
+  if(btn){ btn.textContent='⏳ Generating PDF...'; btn.disabled=true; }
 
-  // ── WHITE BACKGROUND ──
-  doc.setFillColor(...white);
-  doc.rect(0,0,W,H,'F');
-
-  // ── GOLD HEADER BAND ──
-  doc.setFillColor(...goldl);
-  doc.rect(0,0,W,36,'F');
-
-  // ── SUBTLE PATTERN ON HEADER ──
-  doc.setFillColor(180,110,15);
-  for(let i=0;i<W;i+=8){
-    doc.rect(i,0,4,36,'F');
-  }
-  doc.setFillColor(...goldl);
-  doc.rect(0,0,W,36,'F'); // re-paint over pattern for clean look
-
-  // ── LOGO in header ──
   try {
-    const imgData=await getImageAsBase64('logo.png');
-    doc.addImage(imgData,'PNG',9,5,26,26,'','FAST');
-  } catch(e) {
-    doc.setFillColor(...white); doc.circle(22,18,10,'F');
-    doc.setTextColor(...goldl); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text('MT',19,20);
-  }
+    if(!window.jspdf){ throw new Error('PDF library not loaded. Please refresh the page and try again.'); }
 
-  // ── BUSINESS NAME in header ──
-  doc.setTextColor(...white);
-  doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text('MERIGO TRESSES', 40, 16);
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-  doc.setTextColor(255,240,210);
-  doc.text('Fukuoka, Japan  \u00B7  Hair Braiding Studio', 40, 23);
+    const { jsPDF }=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
+    const W=doc.internal.pageSize.getWidth();
+    const H=doc.internal.pageSize.getHeight();
 
-  // Receipt badge top right
-  doc.setFillColor(...dark);
-  doc.roundedRect(W-36,5,30,12,2,2,'F');
-  doc.setTextColor(...white);
-  doc.setFontSize(6.5); doc.setFont('helvetica','bold');
-  const num='#'+String(cache.transactions.filter(x=>x.type==='income').indexOf(t)+1).padStart(3,'0');
-  doc.text('RECEIPT '+num, W-21, 11, {align:'center'});
-  doc.setFontSize(6); doc.setFont('helvetica','normal');
-  doc.text(fmtDateFull(t.date), W-21, 16.5, {align:'center'});
+    const white   = [255, 255, 255];
+    const gold    = [180, 110, 15];
+    const goldl   = [201, 132, 26];
+    const dark    = [20,  14,  8];
+    const gray    = [100, 90,  80];
+    const lgray   = [160, 148, 130];
+    const rowbg   = [245, 241, 234];
+    const altbg   = [238, 232, 220];
+    const green   = [30,  107, 69];
 
-  // ── SERVICE TITLE ──
-  let y = 46;
-  doc.setTextColor(...dark);
-  doc.setFontSize(17); doc.setFont('helvetica','bold');
-  doc.text(t.description, 12, y);
+    // Background
+    doc.setFillColor(...white); doc.rect(0,0,W,H,'F');
+    // Gold header band
+    doc.setFillColor(...goldl); doc.rect(0,0,W,36,'F');
 
-  // ── CLIENT ROW ──
-  if(t.client_name){
+    // Logo
+    try {
+      const imgData=await getImageAsBase64('logo.png');
+      doc.addImage(imgData,'PNG',9,5,26,26,'','FAST');
+    } catch(e) {
+      doc.setFillColor(...white); doc.circle(22,18,10,'F');
+      doc.setTextColor(...goldl); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text('MT',19,20);
+    }
+
+    // Business name in header
+    doc.setTextColor(...white);
+    doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text('MERIGO TRESSES', 40, 16);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.setTextColor(255,240,210);
+    doc.text('Fukuoka, Japan  \u00B7  Hair Braiding Studio', 40, 23);
+
+    // Receipt badge
+    const num='#'+String(cache.transactions.filter(x=>x.type==='income').indexOf(t)+1).padStart(3,'0');
+    doc.setFillColor(...dark); doc.roundedRect(W-36,5,30,12,2,2,'F');
+    doc.setTextColor(...white); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+    doc.text('RECEIPT '+num, W-21, 11, {align:'center'});
+    doc.setFontSize(6); doc.setFont('helvetica','normal');
+    doc.text(fmtDateFull(t.date), W-21, 16.5, {align:'center'});
+
+    // Service title
+    let y = 46;
+    doc.setTextColor(...dark); doc.setFontSize(17); doc.setFont('helvetica','bold');
+    doc.text(t.description, 12, y);
+
+    // Client row
+    if(t.client_name){
+      y += 8;
+      doc.setFillColor(...rowbg); doc.roundedRect(10,y-4,W-20,9,2,2,'F');
+      doc.setTextColor(...gray); doc.setFontSize(8); doc.setFont('helvetica','normal');
+      doc.text('Client:', 14, y+1.5);
+      doc.setTextColor(...dark); doc.setFont('helvetica','bold');
+      doc.text(t.client_name, 30, y+1.5);
+      y += 9;
+    }
+
+    y += 4;
+
+    // Items table
+    const rows = [];
+    rows.push({ label: t.description, val: yen(t.amount), bold: true });
+    if(t.hair_cost>0) rows.push({ label:'Hair extensions ('+t.hair_packs+' pack'+(t.hair_packs>1?'s':'')+')', val:'Included', bold:false });
+    if(t.category) rows.push({ label:'Service type', val:t.category, bold:false });
+    rows.push({ label:'Payment method', val:'Cash', bold:false });
+
+    // Table header
+    doc.setFillColor(...dark); doc.roundedRect(10,y,W-20,8,2,2,'F');
+    doc.setTextColor(...white); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+    doc.text('DESCRIPTION', 15, y+5);
+    doc.text('AMOUNT', W-15, y+5, {align:'right'});
     y += 8;
-    doc.setFillColor(...rowbg);
-    doc.roundedRect(10,y-4,W-20,9,2,2,'F');
-    doc.setTextColor(...gray); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('Client:', 14, y+1.5);
-    doc.setTextColor(...dark); doc.setFont('helvetica','bold');
-    doc.text(t.client_name, 30, y+1.5);
-    y += 9;
+
+    rows.forEach((r,i)=>{
+      doc.setFillColor(...(i%2===0?rowbg:altbg)); doc.rect(10,y,W-20,9,'F');
+      doc.setFontSize(8); doc.setFont('helvetica', r.bold?'bold':'normal');
+      doc.setTextColor(r.bold?dark:gray); doc.text(r.label, 15, y+6);
+      doc.setTextColor(r.bold?green:lgray); doc.text(r.val, W-15, y+6, {align:'right'});
+      y+=9;
+    });
+
+    // Table border
+    doc.setDrawColor(...goldl); doc.setLineWidth(0.5); doc.line(10,y,W-10,y);
+
+    // Total box
+    y += 6;
+    doc.setFillColor(...dark); doc.roundedRect(10,y,W-20,20,3,3,'F');
+    doc.setFillColor(...goldl); doc.roundedRect(10,y,4,20,2,2,'F');
+    doc.setTextColor(...lgray); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('TOTAL PAID', 20, y+9);
+    doc.setTextColor(...white); doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text(yen(t.amount), W-15, y+15, {align:'right'});
+
+    // Thank you
+    y += 28;
+    doc.setFillColor(250,245,235); doc.roundedRect(10,y,W-20,18,3,3,'F');
+    doc.setDrawColor(...goldl); doc.setLineWidth(0.4); doc.roundedRect(10,y,W-20,18,3,3,'S');
+    doc.setTextColor(...goldl); doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.text('Thank you for choosing Merigo Tresses!', W/2, y+8, {align:'center'});
+    doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','italic');
+    doc.text('Beauty begins with care, ends in style \u2756', W/2, y+14, {align:'center'});
+
+    // Footer
+    y += 24;
+    doc.setDrawColor(220,210,195); doc.setLineWidth(0.3); doc.line(10,y,W-10,y);
+    y += 6;
+    doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('@merigo_tresses', 12, y);
+    doc.text('WA: +49 170 612 8008', W/2, y, {align:'center'});
+    doc.text('LINE: +81 90 7101 9857', W-12, y, {align:'right'});
+
+    // Bottom gold bar
+    doc.setFillColor(...goldl); doc.rect(0, H-4, W, 4, 'F');
+
+    const filename='MerigoTresses-Receipt-'+num.replace('#','')+(t.client_name?'-'+t.client_name.replace(/\s+/g,'-'):'')+'.pdf';
+    doc.save(filename);
+    toast('PDF downloaded! \uD83D\uDCC4');
+
+  } catch(err) {
+    toast('Error: ' + (err.message || 'Could not generate PDF'));
+    console.error('PDF error:', err);
   }
 
-  y += 4;
-
-  // ── ITEMS TABLE ──
-  const tableRows = [];
-  tableRows.push({ label: t.description, val: yen(t.amount), bold: true });
-  if(t.hair_cost>0) tableRows.push({ label:'Hair extensions ('+t.hair_packs+' pack'+(t.hair_packs>1?'s':'')+')', val:'Included', bold:false });
-  if(t.category)    tableRows.push({ label:'Service type', val:t.category, bold:false });
-  tableRows.push({ label:'Payment method', val:'Cash', bold:false });
-
-  // Table header
-  doc.setFillColor(...dark);
-  doc.roundedRect(10,y,W-20,8,2,2,'F');
-  doc.setTextColor(...white); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
-  doc.text('DESCRIPTION', 15, y+5);
-  doc.text('AMOUNT', W-15, y+5, {align:'right'});
-  y += 8;
-
-  // Table rows alternating
-  tableRows.forEach((r,i)=>{
-    doc.setFillColor(...(i%2===0?rowbg:altbg));
-    doc.rect(10,y,W-20,9,'F');
-    doc.setTextColor(...gray); doc.setFontSize(8);
-    doc.setFont('helvetica', r.bold?'bold':'normal');
-    doc.setTextColor(r.bold?dark:gray);
-    doc.text(r.label, 15, y+6);
-    doc.setTextColor(r.bold?green:lgray);
-    doc.setFont('helvetica', r.bold?'bold':'normal');
-    doc.text(r.val, W-15, y+6, {align:'right'});
-    y+=9;
-  });
-
-  // Table bottom border
-  doc.setDrawColor(...goldl); doc.setLineWidth(0.5); doc.line(10,y,W-20+10,y);
-
-  // ── TOTAL BOX ──
-  y += 6;
-  doc.setFillColor(...dark);
-  doc.roundedRect(10,y,W-20,20,3,3,'F');
-  // Gold accent left strip
-  doc.setFillColor(...goldl);
-  doc.roundedRect(10,y,4,20,2,2,'F');
-  doc.setTextColor(...lgray); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.text('TOTAL PAID', 20, y+9);
-  doc.setTextColor(...white); doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text(yen(t.amount), W-15, y+15, {align:'right'});
-
-  // ── THANK YOU ──
-  y += 28;
-  doc.setFillColor(250,245,235);
-  doc.roundedRect(10,y,W-20,18,3,3,'F');
-  doc.setDrawColor(...goldl); doc.setLineWidth(0.4);
-  doc.roundedRect(10,y,W-20,18,3,3,'S');
-  doc.setTextColor(...goldl); doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.text('Thank you for choosing Merigo Tresses!', W/2, y+8, {align:'center'});
-  doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','italic');
-  doc.text('Beauty begins with care, ends in style \u2756', W/2, y+14, {align:'center'});
-
-  // ── FOOTER ──
-  y += 24;
-  doc.setDrawColor(220,210,195); doc.setLineWidth(0.3); doc.line(10,y,W-10,y);
-  y += 6;
-  doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text('@merigo_tresses', 12, y);
-  doc.text('WA: +49 170 612 8008', W/2, y, {align:'center'});
-  doc.text('LINE: +81 90 7101 9857', W-12, y, {align:'right'});
-
-  // ── BOTTOM GOLD BAR ──
-  doc.setFillColor(...goldl);
-  doc.rect(0, H-4, W, 4, 'F');
-
-  const filename='MerigoTresses-Receipt-'+num.replace('#','')+(t.client_name?'-'+t.client_name.replace(/\s+/g,'-'):'')+'.pdf';
-  doc.save(filename);
-  toast('PDF downloaded! \uD83D\uDCC4 Clean & professional!');
+  if(btn){ btn.textContent='\uD83D\uDCC4 Download PDF Receipt'; btn.disabled=false; }
 }
 
 function getImageAsBase64(src){
