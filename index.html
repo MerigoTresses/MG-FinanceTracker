@@ -81,8 +81,8 @@ img{display:block;max-width:100%;}
 
 /* ── BOTTOM NAV ── */
 .bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;height:var(--nav);border-top:1px solid rgba(201,132,26,.1);z-index:400;padding-bottom:env(safe-area-inset-bottom);}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:none;background:none;color:rgba(255,255,255,.3);cursor:pointer;gap:3px;font-size:9px;font-weight:500;transition:color .15s;padding:6px 2px 4px;letter-spacing:.02em;}
-.nb svg{width:20px;height:20px;stroke-width:1.8;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:none;background:none;color:rgba(255,255,255,.3);cursor:pointer;gap:2px;font-size:7.5px;font-weight:500;transition:color .15s;padding:5px 1px 4px;letter-spacing:0;min-width:0;overflow:hidden;}
+.nb svg{width:17px;height:17px;stroke-width:1.8;flex-shrink:0;}
 .nb.active{color:var(--gold);}
 .nb:active{opacity:.65;}
 
@@ -482,64 +482,82 @@ img{display:block;max-width:100%;}
   <!-- MORE (Stock, Products, Goals, Reports) -->
   <div class="page" id="pg-more">
     <div style="padding-top:13px">
-    <div class="grid2" style="margin-bottom:4px">
-      <button class="card" style="cursor:pointer;text-align:center;border:none;" onclick="showSubPage('stock')">
-        <div style="font-size:1.5rem;margin-bottom:4px">📦</div>
-        <div style="font-size:.82rem;font-weight:600">Hair Stock</div>
-        <div style="font-size:.68rem;color:var(--muted)">Inventory</div>
+    <div style="font-size:1.1rem;font-weight:700;font-family:'Playfair Display',serif;margin-bottom:14px;color:var(--gold)">More Features</div>
+    <div class="grid2">
+      <button class="card" style="cursor:pointer;text-align:center;border:2px solid var(--border);background:var(--white);padding:20px 12px;" onclick="showFullPage('stock')">
+        <div style="font-size:2rem;margin-bottom:8px">📦</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text)">Hair Stock</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Inventory Manager</div>
       </button>
-      <button class="card" style="cursor:pointer;text-align:center;border:none;" onclick="showSubPage('products')">
-        <div style="font-size:1.5rem;margin-bottom:4px">🛒</div>
-        <div style="font-size:.82rem;font-weight:600">Products</div>
-        <div style="font-size:.68rem;color:var(--muted)">Purchases</div>
+      <button class="card" style="cursor:pointer;text-align:center;border:2px solid var(--border);background:var(--white);padding:20px 12px;" onclick="showFullPage('products')">
+        <div style="font-size:2rem;margin-bottom:8px">🛒</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text)">Products</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Purchase Tracker</div>
       </button>
-      <button class="card" style="cursor:pointer;text-align:center;border:none;" onclick="showSubPage('goals')">
-        <div style="font-size:1.5rem;margin-bottom:4px">🎯</div>
-        <div style="font-size:.82rem;font-weight:600">Savings Goals</div>
-        <div style="font-size:.68rem;color:var(--muted)">Targets</div>
+      <button class="card" style="cursor:pointer;text-align:center;border:2px solid var(--border);background:var(--white);padding:20px 12px;" onclick="showFullPage('goals')">
+        <div style="font-size:2rem;margin-bottom:8px">🎯</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text)">Savings Goals</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Track Targets</div>
       </button>
-      <button class="card" style="cursor:pointer;text-align:center;border:none;" onclick="showSubPage('reports')">
-        <div style="font-size:1.5rem;margin-bottom:4px">📊</div>
-        <div style="font-size:.82rem;font-weight:600">Reports</div>
-        <div style="font-size:.68rem;color:var(--muted)">Monthly Summary</div>
+      <button class="card" style="cursor:pointer;text-align:center;border:2px solid var(--border);background:var(--white);padding:20px 12px;" onclick="showFullPage('reports')">
+        <div style="font-size:2rem;margin-bottom:8px">📊</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text)">Reports</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Monthly Summary</div>
       </button>
     </div>
-
-    <!-- STOCK SUB -->
-    <div id="sub-stock" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
-        <div style="font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Hair Stock</div>
-        <button class="btn-sm" onclick="openModal('stockModal')">+ Add</button>
-      </div>
-      <div id="stock-list"><div class="loading">Loading...</div></div>
     </div>
+  </div>
 
-    <!-- PRODUCTS SUB -->
-    <div id="sub-products" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
-        <div style="font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Products Bought</div>
-        <button class="btn-sm" onclick="openModal('productModal')">+ Add</button>
-      </div>
-      <div class="stitle">This Month Total: <span id="prod-month-total" style="color:var(--red);font-weight:700">¥0</span></div>
-      <div id="product-list"><div class="loading">Loading...</div></div>
+  <!-- HAIR STOCK FULL PAGE -->
+  <div class="page" id="pg-stock">
+    <div style="padding-top:13px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
+      <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">📦 Hair Stock</div>
+      <button class="btn-sm" onclick="openModal('stockModal')">+ Add</button>
     </div>
+    <div id="stock-summary" class="grid2" style="margin-bottom:12px"></div>
+    <div id="stock-list"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
 
-    <!-- GOALS SUB -->
-    <div id="sub-goals" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
-        <div style="font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Savings Goals</div>
-        <button class="btn-sm" onclick="openModal('goalModal')">+ Add Goal</button>
-      </div>
-      <div id="goals-list"><div class="loading">Loading...</div></div>
+  <!-- PRODUCTS FULL PAGE -->
+  <div class="page" id="pg-products">
+    <div style="padding-top:13px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
+      <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">🛒 Products Bought</div>
+      <button class="btn-sm" onclick="openModal('productModal')">+ Add</button>
     </div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="card"><div class="clabel">This Month</div><div class="cval r" id="prod-month-total">¥0</div></div>
+      <div class="card"><div class="clabel">All Time</div><div class="cval r" id="prod-all-total">¥0</div></div>
+    </div>
+    <div id="product-list"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
 
-    <!-- REPORTS SUB -->
-    <div id="sub-reports" style="display:none">
-      <div style="margin:14px 0 10px;font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Monthly Reports</div>
-      <div id="reports-list"><div class="loading">Loading...</div></div>
-      <div class="stitle">Export</div>
-      <button class="btn-p" onclick="exportCSV()" style="margin-bottom:8px">📥 Export CSV for Google Sheets</button>
+  <!-- SAVINGS GOALS FULL PAGE -->
+  <div class="page" id="pg-goals">
+    <div style="padding-top:13px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
+      <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">🎯 Savings Goals</div>
+      <button class="btn-sm" onclick="openModal('goalModal')">+ Add Goal</button>
     </div>
+    <div id="goals-list"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- REPORTS FULL PAGE -->
+  <div class="page" id="pg-reports">
+    <div style="padding-top:13px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="backToMore()" style="background:var(--gold-p);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;color:var(--gold);cursor:pointer;">← Back</button>
+      <div style="font-size:1.05rem;font-weight:700;font-family:'Playfair Display',serif;flex:1">📊 Monthly Reports</div>
+    </div>
+    <button class="btn-p" onclick="exportCSV()" style="margin-bottom:14px">📥 Export CSV for Google Sheets</button>
+    <div id="reports-list"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
@@ -1000,14 +1018,25 @@ function showPage(name, btn) {
   if (name === 'clients') refreshClients();
 }
 
-function showSubPage(name) {
-  document.querySelectorAll('[id^="sub-"]').forEach(el => el.style.display = 'none');
-  document.getElementById('sub-' + name).style.display = 'block';
+function showFullPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + name).classList.add('active');
   if (name === 'stock') refreshStock();
   if (name === 'products') refreshProducts();
   if (name === 'goals') refreshGoals();
   if (name === 'reports') refreshReports();
 }
+
+function backToMore() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-more').classList.add('active');
+  // highlight More nav button
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nb')[5].classList.add('active');
+}
+
+function showSubPage(name) { showFullPage(name); }
 
 // =============================================
 // DASHBOARD
@@ -1422,8 +1451,13 @@ function refreshProducts() {
   const prods = cache.products;
   const monthProds = prods.filter(p => inPeriod(p.date, 'monthly'));
   const monthTotal = monthProds.reduce((s, p) => s + (p.cost || 0), 0);
-  document.getElementById('prod-month-total').textContent = yen(monthTotal);
+  const allTotal = prods.reduce((s, p) => s + (p.cost || 0), 0);
+  const m = document.getElementById('prod-month-total');
+  const a = document.getElementById('prod-all-total');
+  if (m) m.textContent = yen(monthTotal);
+  if (a) a.textContent = yen(allTotal);
   const el = document.getElementById('product-list');
+  if (!el) return;
   if (!prods.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">🛒</div><p>No products logged yet.</p></div>'; return; }
   const cats = { 'Hair Supplies': '💇', 'Oil Ingredients': '🌿', 'Packaging': '📦', 'Tools & Equipment': '🔧', 'Shipping': '🚚', 'Marketing': '📣', 'Other': '🛍️' };
   el.innerHTML = prods.map(p => `
