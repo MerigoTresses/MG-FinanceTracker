@@ -27,7 +27,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;font-size:16px;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;-webkit-overflow-scrolling:touch;}
 h1,h2,h3{font-family:'Playfair Display',serif;}
 button,input,select,textarea{font-family:'DM Sans',sans-serif;font-size:16px!important;}
 img{display:block;max-width:100%;}
@@ -61,7 +61,8 @@ img{display:block;max-width:100%;}
 .lock-icon{font-size:3rem;text-align:center;margin-bottom:8px;}
 
 /* ── MAIN APP ── */
-#app{display:none;min-height:100vh;padding-bottom:calc(var(--nav)+8px);}
+#app{display:none;min-height:100vh;padding-bottom:calc(var(--nav) + 24px);}
+.page{display:none;padding:14px 14px 40px;animation:pgIn .15s ease;}
 #app.show{display:block;}
 
 /* ── HEADER ── */
@@ -87,7 +88,7 @@ img{display:block;max-width:100%;}
 .nb:active{opacity:.65;}
 
 /* ── PAGES ── */
-.page{display:none;padding:14px 14px 6px;animation:pgIn .15s ease;}
+
 .page.active{display:block;}
 @keyframes pgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
@@ -257,7 +258,7 @@ img{display:block;max-width:100%;}
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none;align-items:flex-end;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease;}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 48px;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease;-webkit-overflow-scrolling:touch;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
 .modal-title{font-size:1.05rem;font-weight:700;margin-bottom:16px;font-family:'Playfair Display',serif;}
@@ -332,7 +333,7 @@ img{display:block;max-width:100%;}
   <!-- DASHBOARD -->
   <div class="page active" id="pg-dash">
     <div class="ptabs" style="margin-top:13px">
-      <button class="ptab active" onclick="setPeriod('daily',this)">Today</button>
+      <button class="ptab" onclick="setPeriod('daily',this)">Today</button>
       <button class="ptab" onclick="setPeriod('weekly',this)">Week</button>
       <button class="ptab active" onclick="setPeriod('monthly',this)">Month</button>
       <button class="ptab" onclick="setPeriod('yearly',this)">Year</button>
@@ -482,7 +483,15 @@ img{display:block;max-width:100%;}
   <!-- MORE (Stock, Products, Goals, Reports) -->
   <div class="page" id="pg-more">
     <div style="padding-top:13px">
-    <div style="font-size:1.1rem;font-weight:700;font-family:'Playfair Display',serif;margin-bottom:14px;color:var(--gold)">More Features</div>
+    <div style="font-size:1.1rem;font-weight:700;font-family:'Playfair Display',serif;margin-bottom:6px;color:var(--gold)">More Features</div>
+    <!-- Annual goal setting -->
+    <div class="card span2" style="margin-bottom:12px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:4px">ANNUAL INCOME GOAL (¥)</div>
+        <input type="number" id="goal-annual" inputmode="numeric" placeholder="960000" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:.95rem;font-family:'DM Sans',sans-serif;background:var(--cream);" onchange="updateAnnualGoal(this.value)"/>
+      </div>
+      <div style="font-size:.75rem;color:var(--muted);text-align:center">Tap to<br/>edit</div>
+    </div>
     <div class="grid2">
       <button class="card" style="cursor:pointer;text-align:center;border:2px solid var(--border);background:var(--white);padding:20px 12px;" onclick="showFullPage('stock')">
         <div style="font-size:2rem;margin-bottom:8px">📦</div>
@@ -717,9 +726,70 @@ img{display:block;max-width:100%;}
     <button class="modal-close" onclick="closeModal('txModal')">✕</button>
     <div class="modal-title" id="tx-modal-title">Transaction</div>
     <div id="tx-modal-body"></div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn-del" onclick="deleteTx()" style="flex:1">Delete</button>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn-p" id="receiptBtn" onclick="generateReceipt()" style="flex:2;background:var(--green)">🧾 Generate Receipt</button>
+      <button class="btn-del" onclick="deleteTx()" style="flex:1">🗑</button>
       <button class="btn-sm" onclick="closeModal('txModal')" style="flex:1">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal" style="padding:0;overflow:hidden;border-radius:20px 20px 0 0">
+    <div style="padding:16px 16px 0">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:1rem;font-weight:700;font-family:'Playfair Display',serif">Receipt Preview</div>
+        <button class="modal-close" onclick="closeModal('receiptModal')" style="position:static">✕</button>
+      </div>
+    </div>
+    <!-- RECEIPT CARD -->
+    <div id="receiptCard" style="margin:0 14px 14px;background:#0D0608;border-radius:16px;padding:24px 20px;color:white;font-family:'DM Sans',sans-serif;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(201,132,26,0.3)">
+        <img src="logo.png" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1.5px solid rgba(201,132,26,0.4)"/>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:#C9841A">Merigo Tresses</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.4);">Fukuoka, Japan · Hair Braiding Studio</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:.62rem;color:rgba(255,255,255,.35)">RECEIPT</div>
+          <div style="font-size:.75rem;color:var(--gold-l);font-weight:600" id="r-number">#001</div>
+        </div>
+      </div>
+      <div id="r-service" style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:white;margin-bottom:4px"></div>
+      <div id="r-client" style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:18px"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px" id="r-lines"></div>
+      <div style="border-top:1px solid rgba(201,132,26,0.3);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:.85rem;color:rgba(255,255,255,.5)">TOTAL PAID</div>
+        <div id="r-total" style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#C9841A"></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:.65rem;color:rgba(255,255,255,.25);text-align:center">
+        💴 Cash payment received · Thank you for choosing Merigo Tresses!<br/>
+        📸 @merigo_tresses · 💬 WhatsApp: +49 170 612 8008
+      </div>
+    </div>
+    <!-- SHARE BUTTONS -->
+    <div style="padding:0 14px 28px">
+      <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Share Receipt</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button onclick="shareReceipt('whatsapp')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:50px;border:none;background:#25D366;color:white;font-weight:600;font-size:.85rem;cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button onclick="shareReceipt('line')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:50px;border:none;background:#06C755;color:white;font-weight:600;font-size:.85rem;cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          LINE
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="shareReceipt('copy')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:50px;border:1.5px solid var(--border);background:white;color:var(--text);font-weight:600;font-size:.85rem;cursor:pointer">
+          📋 Copy Text
+        </button>
+        <button onclick="shareReceipt('native')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:50px;border:none;background:var(--dark);color:white;font-weight:600;font-size:.85rem;cursor:pointer">
+          📤 Share
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -733,14 +803,18 @@ img{display:block;max-width:100%;}
 const SUPABASE_URL = 'https://vpvbghdfounqcarrkbeu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_UlCXeIxgu_8rwXzRGPXsIg_7v8KuEFU';
 const TAX_RATE = 0.12;
-const ANNUAL_GOAL = 960000;
+let ANNUAL_GOAL = parseInt(localStorage.getItem('mt_goal') || '960000');
 const HAIR_SERVICES = ['Braiding Service'];
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =============================================
-// STATE
-// =============================================
+// ── TABLE KEY MAP (fix underscore bug) ──
+const TBL_KEY = {
+  transactions:'mt_tx', clients:'mt_clients', appointments:'mt_appts',
+  hair_stock:'mt_stock', products:'mt_products', savings_goals:'mt_goals'
+};
+function cacheKey(table){ return TBL_KEY[table] || 'mt_'+table; }
+
+// ── STATE ──
 let user = null;
 let authMode = 'login';
 let period = 'monthly';
@@ -748,724 +822,770 @@ let logPeriod = 'monthly';
 let apptFilter = 'upcoming';
 let txType = 'income';
 let currentTxId = null;
+let currentTxIsClient = false;
 let isOnline = navigator.onLine;
+let lockTimer = null;
 
-// Local cache for offline
 let cache = {
-  transactions: JSON.parse(localStorage.getItem('mt_tx') || '[]'),
-  clients: JSON.parse(localStorage.getItem('mt_clients') || '[]'),
-  appointments: JSON.parse(localStorage.getItem('mt_appts') || '[]'),
-  hair_stock: JSON.parse(localStorage.getItem('mt_stock') || '[]'),
-  products: JSON.parse(localStorage.getItem('mt_products') || '[]'),
-  savings_goals: JSON.parse(localStorage.getItem('mt_goals') || '[]'),
+  transactions: JSON.parse(localStorage.getItem('mt_tx')||'[]'),
+  clients: JSON.parse(localStorage.getItem('mt_clients')||'[]'),
+  appointments: JSON.parse(localStorage.getItem('mt_appts')||'[]'),
+  hair_stock: JSON.parse(localStorage.getItem('mt_stock')||'[]'),
+  products: JSON.parse(localStorage.getItem('mt_products')||'[]'),
+  savings_goals: JSON.parse(localStorage.getItem('mt_goals')||'[]'),
 };
+let pendingSync = JSON.parse(localStorage.getItem('mt_pending')||'[]');
 
-// Pending offline actions
-let pendingSync = JSON.parse(localStorage.getItem('mt_pending') || '[]');
+// ── INIT ──
+window.addEventListener('online', ()=>{ isOnline=true; updateSyncDot(); syncPending(); });
+window.addEventListener('offline',()=>{ isOnline=false; updateSyncDot(); });
 
-// =============================================
-// INIT
-// =============================================
-window.addEventListener('online', () => { isOnline = true; updateSyncDot(); syncPending(); });
-window.addEventListener('offline', () => { isOnline = false; updateSyncDot(); });
-
-document.addEventListener('DOMContentLoaded', async () => {
-  // Set today's date fields
+document.addEventListener('DOMContentLoaded', async ()=>{
   const t = today();
   document.getElementById('f-date').value = t;
   document.getElementById('am-date').value = t;
   document.getElementById('pm-date').value = t;
-  document.getElementById('hdrDate').textContent = new Date().toLocaleDateString('en', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('hdrDate').textContent =
+    new Date().toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 
-  // Show splash then check auth
-  setTimeout(async () => {
+  // Load saved annual goal
+  const goalInput = document.getElementById('goal-annual');
+  if(goalInput) goalInput.value = ANNUAL_GOAL;
+
+  setTimeout(async ()=>{
     const splash = document.getElementById('splash');
-    splash.style.opacity = '0';
-    setTimeout(() => splash.remove(), 500);
-
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      user = session.user;
-      showApp();
-    } else {
-      showAuth();
-    }
+    splash.style.opacity='0';
+    setTimeout(()=>splash.remove(),500);
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session){ user=session.user; showApp(); }
+    else { showAuth(); }
   }, 1800);
 
-  // Lock when page hidden
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && user) {
-      localStorage.setItem('mt_lock', 'true');
-    }
-    if (!document.hidden && localStorage.getItem('mt_lock') === 'true') {
-      localStorage.removeItem('mt_lock');
-      showAuth(true);
+  // Lock after 10 minutes hidden (not just tab switch)
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden && user){
+      lockTimer = setTimeout(()=>{ localStorage.setItem('mt_lock','true'); },10*60*1000);
+    } else {
+      clearTimeout(lockTimer);
+      if(localStorage.getItem('mt_lock')==='true'){
+        localStorage.removeItem('mt_lock');
+        showAuth(true);
+      }
     }
   });
-
   updateSyncDot();
 });
 
-// =============================================
-// AUTH
-// =============================================
-function showAuth(locked = false) {
+// ── AUTH ──
+function showAuth(locked=false){
   document.getElementById('app').classList.remove('show');
-  document.getElementById('mainNav').style.display = 'none';
-  const as = document.getElementById('authScreen');
+  document.getElementById('mainNav').style.display='none';
+  const as=document.getElementById('authScreen');
   as.classList.add('show');
-  if (locked) {
-    document.getElementById('authLockIcon').style.display = 'block';
-    document.getElementById('authTitle').textContent = 'App Locked';
-    document.getElementById('authSubtitle').textContent = 'Please sign in to continue';
-    document.getElementById('authToggle').style.display = 'none';
+  // Reset to login mode
+  if(authMode!=='login'){ authMode='login'; applyAuthMode(); }
+  if(locked){
+    document.getElementById('authLockIcon').style.display='block';
+    document.getElementById('authTitle').textContent='App Locked';
+    document.getElementById('authSubtitle').textContent='Sign in to continue';
+    document.getElementById('authToggle').style.display='none';
+  } else {
+    document.getElementById('authLockIcon').style.display='none';
+    document.getElementById('authToggle').style.display='block';
   }
 }
 
-function showApp() {
+function showApp(){
   document.getElementById('authScreen').classList.remove('show');
   document.getElementById('app').classList.add('show');
-  document.getElementById('mainNav').style.display = 'flex';
+  document.getElementById('mainNav').style.display='flex';
   refreshDash();
   syncAll();
 }
 
-function toggleAuthMode() {
-  authMode = authMode === 'login' ? 'signup' : 'login';
-  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Welcome Back' : 'Create Account';
-  document.getElementById('authBtn').textContent = authMode === 'login' ? 'Sign In' : 'Sign Up';
-  document.getElementById('signupName').style.display = authMode === 'signup' ? 'block' : 'none';
-  document.getElementById('signupPass2').style.display = authMode === 'signup' ? 'block' : 'none';
-  document.getElementById('authToggle').innerHTML = authMode === 'login'
+function applyAuthMode(){
+  const isLogin = authMode==='login';
+  document.getElementById('authTitle').textContent = isLogin?'Welcome Back':'Create Account';
+  document.getElementById('authBtn').textContent = isLogin?'Sign In':'Sign Up';
+  document.getElementById('signupName').style.display = isLogin?'none':'block';
+  document.getElementById('signupPass2').style.display = isLogin?'none':'block';
+  document.getElementById('authToggle').innerHTML = isLogin
     ? "Don't have an account? <span onclick='toggleAuthMode()'>Sign Up</span>"
     : "Already have an account? <span onclick='toggleAuthMode()'>Sign In</span>";
-  document.getElementById('authErr').textContent = '';
+  document.getElementById('authErr').textContent='';
 }
 
-async function handleAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass = document.getElementById('authPass').value;
-  const btn = document.getElementById('authBtn');
-  const err = document.getElementById('authErr');
+function toggleAuthMode(){
+  authMode = authMode==='login'?'signup':'login';
+  applyAuthMode();
+}
 
-  if (!email || !pass) { err.textContent = 'Please fill in email and password.'; return; }
-
-  btn.disabled = true;
-  btn.textContent = authMode === 'login' ? 'Signing in...' : 'Creating account...';
-  err.textContent = '';
-
-  try {
+async function handleAuth(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pass=document.getElementById('authPass').value;
+  const btn=document.getElementById('authBtn');
+  const err=document.getElementById('authErr');
+  if(!email||!pass){ err.textContent='Please enter email and password.'; return; }
+  btn.disabled=true; btn.textContent=authMode==='login'?'Signing in...':'Creating account...';
+  err.textContent=''; err.style.color='#ff8080';
+  try{
     let result;
-    if (authMode === 'signup') {
-      const pass2 = document.getElementById('authPass2').value;
-      if (pass !== pass2) { err.textContent = 'Passwords do not match.'; btn.disabled = false; btn.textContent = 'Sign Up'; return; }
-      result = await sb.auth.signUp({ email, password: pass });
-      if (result.error) throw result.error;
-      if (result.data.user && !result.data.session) {
-        err.style.color = '#4ade80';
-        err.textContent = 'Check your email to confirm your account!';
-        btn.disabled = false; btn.textContent = 'Sign Up'; return;
+    if(authMode==='signup'){
+      const pass2=document.getElementById('authPass2').value;
+      if(pass!==pass2){ err.textContent='Passwords do not match.'; btn.disabled=false; btn.textContent='Sign Up'; return; }
+      if(pass.length<6){ err.textContent='Password must be at least 6 characters.'; btn.disabled=false; btn.textContent='Sign Up'; return; }
+      result = await sb.auth.signUp({ email, password:pass });
+      if(result.error) throw result.error;
+      // If session exists, log in directly (email confirm is OFF)
+      if(result.data?.session){
+        user=result.data.user; showApp(); return;
       }
+      // If no session but user exists, try signing in immediately
+      if(result.data?.user){
+        const login = await sb.auth.signInWithPassword({ email, password:pass });
+        if(!login.error && login.data?.session){ user=login.data.user; showApp(); return; }
+      }
+      err.style.color='#4ade80';
+      err.textContent='Account created! Check your email to confirm, then sign in.';
     } else {
-      result = await sb.auth.signInWithPassword({ email, password: pass });
-      if (result.error) throw result.error;
+      result = await sb.auth.signInWithPassword({ email, password:pass });
+      if(result.error) throw result.error;
+      user=result.data.user; showApp(); return;
     }
-    user = result.data.user;
-    showApp();
-  } catch (e) {
-    err.textContent = e.message || 'Something went wrong. Try again.';
+  } catch(e){
+    err.textContent = e.message==='Invalid login credentials'
+      ? 'Wrong email or password. Try again.'
+      : (e.message||'Something went wrong. Try again.');
   }
-  btn.disabled = false;
-  btn.textContent = authMode === 'login' ? 'Sign In' : 'Sign Up';
+  btn.disabled=false;
+  btn.textContent=authMode==='login'?'Sign In':'Sign Up';
 }
 
-async function signOut() {
-  if (!confirm('Sign out?')) return;
+async function signOut(){
+  if(!confirm('Sign out of Merigo Tresses Finance?')) return;
   await sb.auth.signOut();
-  user = null;
-  // Clear cache
-  Object.keys(cache).forEach(k => { cache[k] = []; localStorage.removeItem('mt_' + k.replace('_', '')); });
+  user=null;
+  Object.keys(cache).forEach(k=>{ cache[k]=[]; localStorage.removeItem(cacheKey(k)); });
   showAuth();
 }
 
-// =============================================
-// SYNC
-// =============================================
-function updateSyncDot() {
-  const dot = document.getElementById('syncDot');
-  if (!dot) return;
-  dot.className = 'sync-dot' + (isOnline ? '' : ' offline');
+// ── SYNC ──
+function updateSyncDot(){
+  const dot=document.getElementById('syncDot');
+  if(!dot) return;
+  dot.className='sync-dot'+(isOnline?'':' offline');
 }
 
-async function syncAll() {
-  if (!isOnline || !user) return;
-  document.getElementById('syncDot').className = 'sync-dot syncing';
-  try {
-    await Promise.all([
-      fetchTable('transactions'),
-      fetchTable('clients'),
-      fetchTable('appointments'),
-      fetchTable('hair_stock'),
-      fetchTable('products'),
-      fetchTable('savings_goals'),
-    ]);
-    syncPending();
-  } catch(e) { console.error('Sync error', e); }
-  document.getElementById('syncDot').className = 'sync-dot';
+async function syncAll(){
+  if(!isOnline||!user) return;
+  const dot=document.getElementById('syncDot');
+  if(dot) dot.className='sync-dot syncing';
+  try{
+    await Promise.all(Object.keys(TBL_KEY).map(t=>fetchTable(t)));
+    await syncPending();
+    refreshDash();
+  } catch(e){ console.error('Sync error',e); }
+  if(dot) dot.className='sync-dot';
 }
 
-async function fetchTable(table) {
-  const key = table.replace('_', '');
-  const { data, error } = await sb.from(table).select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-  if (!error && data) {
-    cache[table] = data;
-    localStorage.setItem('mt_' + key, JSON.stringify(data));
+async function fetchTable(table){
+  const { data, error } = await sb.from(table).select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  if(!error && data){
+    cache[table]=data;
+    localStorage.setItem(cacheKey(table),JSON.stringify(data));
   }
 }
 
-async function syncPending() {
-  if (!isOnline || !user || !pendingSync.length) return;
-  const toSync = [...pendingSync];
-  for (const action of toSync) {
-    try {
-      if (action.op === 'insert') {
-        await sb.from(action.table).insert({ ...action.data, user_id: user.id });
-      } else if (action.op === 'update') {
-        await sb.from(action.table).update(action.data).eq('id', action.id).eq('user_id', user.id);
-      } else if (action.op === 'delete') {
-        await sb.from(action.table).delete().eq('id', action.id).eq('user_id', user.id);
-      }
-      pendingSync = pendingSync.filter(p => p !== action);
-    } catch(e) { break; }
+async function syncPending(){
+  if(!isOnline||!user||!pendingSync.length) return;
+  const toSync=[...pendingSync];
+  for(const action of toSync){
+    try{
+      if(action.op==='insert') await sb.from(action.table).insert({...action.data,user_id:user.id});
+      else if(action.op==='update') await sb.from(action.table).update(action.data).eq('id',action.id).eq('user_id',user.id);
+      else if(action.op==='delete') await sb.from(action.table).delete().eq('id',action.id).eq('user_id',user.id);
+      pendingSync=pendingSync.filter(p=>p!==action);
+    } catch(e){ break; }
   }
-  localStorage.setItem('mt_pending', JSON.stringify(pendingSync));
-  await syncAll();
+  localStorage.setItem('mt_pending',JSON.stringify(pendingSync));
 }
 
-async function dbInsert(table, data) {
-  const newRow = { ...data, user_id: user?.id, id: Date.now(), created_at: new Date().toISOString() };
+async function dbInsert(table,data){
+  const newRow={...data,user_id:user?.id,id:Date.now(),created_at:new Date().toISOString()};
   cache[table].unshift(newRow);
-  localStorage.setItem('mt_' + table.replace('_',''), JSON.stringify(cache[table]));
-  if (isOnline && user) {
-    const { data: row, error } = await sb.from(table).insert({ ...data, user_id: user.id }).select().single();
-    if (!error && row) {
-      cache[table][0] = row;
-      localStorage.setItem('mt_' + table.replace('_',''), JSON.stringify(cache[table]));
+  localStorage.setItem(cacheKey(table),JSON.stringify(cache[table]));
+  if(isOnline&&user){
+    const {data:row,error}=await sb.from(table).insert({...data,user_id:user.id}).select().single();
+    if(!error&&row){
+      const idx=cache[table].findIndex(r=>r.id==newRow.id);
+      if(idx>-1) cache[table][idx]=row;
+      localStorage.setItem(cacheKey(table),JSON.stringify(cache[table]));
+      return row;
     }
   } else {
-    pendingSync.push({ op: 'insert', table, data });
-    localStorage.setItem('mt_pending', JSON.stringify(pendingSync));
+    pendingSync.push({op:'insert',table,data});
+    localStorage.setItem('mt_pending',JSON.stringify(pendingSync));
   }
   return newRow;
 }
 
-async function dbDelete(table, id) {
-  cache[table] = cache[table].filter(r => r.id != id);
-  localStorage.setItem('mt_' + table.replace('_',''), JSON.stringify(cache[table]));
-  if (isOnline && user) {
-    await sb.from(table).delete().eq('id', id).eq('user_id', user.id);
+async function dbDelete(table,id){
+  cache[table]=cache[table].filter(r=>r.id!=id);
+  localStorage.setItem(cacheKey(table),JSON.stringify(cache[table]));
+  if(isOnline&&user){
+    await sb.from(table).delete().eq('id',id).eq('user_id',user.id);
   } else {
-    pendingSync.push({ op: 'delete', table, id });
-    localStorage.setItem('mt_pending', JSON.stringify(pendingSync));
+    pendingSync.push({op:'delete',table,id});
+    localStorage.setItem('mt_pending',JSON.stringify(pendingSync));
   }
 }
 
-async function dbUpdate(table, id, data) {
-  cache[table] = cache[table].map(r => r.id == id ? { ...r, ...data } : r);
-  localStorage.setItem('mt_' + table.replace('_',''), JSON.stringify(cache[table]));
-  if (isOnline && user) {
-    await sb.from(table).update(data).eq('id', id).eq('user_id', user.id);
+async function dbUpdate(table,id,data){
+  cache[table]=cache[table].map(r=>r.id==id?{...r,...data}:r);
+  localStorage.setItem(cacheKey(table),JSON.stringify(cache[table]));
+  if(isOnline&&user){
+    await sb.from(table).update(data).eq('id',id).eq('user_id',user.id);
   } else {
-    pendingSync.push({ op: 'update', table, id, data });
-    localStorage.setItem('mt_pending', JSON.stringify(pendingSync));
+    pendingSync.push({op:'update',table,id,data});
+    localStorage.setItem('mt_pending',JSON.stringify(pendingSync));
   }
 }
 
-// =============================================
-// DATES & UTILS
-// =============================================
-function today() { return new Date().toISOString().split('T')[0]; }
-function yen(n) { return '¥' + Math.round(Math.abs(n || 0)).toLocaleString(); }
-function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' }); }
-function fmtDateFull(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }); }
-function monthKey(d) { return d ? d.substring(0, 7) : ''; }
-function weekStart() { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d.toISOString().split('T')[0]; }
-function monthStart() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; }
-function yearStart() { return `${new Date().getFullYear()}-01-01`; }
-
-function inPeriod(dateStr, p) {
-  if (!dateStr) return false;
-  if (p === 'daily') return dateStr === today();
-  if (p === 'weekly') return dateStr >= weekStart();
-  if (p === 'monthly') return dateStr >= monthStart();
-  if (p === 'yearly') return dateStr >= yearStart();
+// ── DATES & UTILS ──
+function today(){ return new Date().toISOString().split('T')[0]; }
+function yen(n){ return '¥'+Math.round(Math.abs(n||0)).toLocaleString(); }
+function fmtDate(d){ return new Date(d+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'}); }
+function fmtDateFull(d){ return new Date(d+'T00:00:00').toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'}); }
+function weekStart(){ const d=new Date(); d.setDate(d.getDate()-d.getDay()); return d.toISOString().split('T')[0]; }
+function monthStart(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; }
+function yearStart(){ return `${new Date().getFullYear()}-01-01`; }
+function inPeriod(dateStr,p){
+  if(!dateStr) return false;
+  if(p==='daily') return dateStr===today();
+  if(p==='weekly') return dateStr>=weekStart();
+  if(p==='monthly') return dateStr>=monthStart();
+  if(p==='yearly') return dateStr>=yearStart();
   return true;
 }
+function initials(name){ return name?name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?'; }
 
-function initials(name) { return name ? name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() : '?'; }
-
-// =============================================
-// NAV
-// =============================================
-function showPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
-  document.getElementById('pg-' + name).classList.add('active');
+// ── NAV ──
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'dash') refreshDash();
-  if (name === 'log') refreshLog();
-  if (name === 'appt') refreshAppts();
-  if (name === 'clients') refreshClients();
+  if(name==='dash') refreshDash();
+  if(name==='log') refreshLog();
+  if(name==='appt') refreshAppts();
+  if(name==='clients') refreshClients();
+  window.scrollTo(0,0);
 }
 
-function showFullPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
-  document.getElementById('pg-' + name).classList.add('active');
-  if (name === 'stock') refreshStock();
-  if (name === 'products') refreshProducts();
-  if (name === 'goals') refreshGoals();
-  if (name === 'reports') refreshReports();
+function showFullPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  // Keep More nav button highlighted
+  const moreBtn=document.querySelector('.nb:last-child');
+  if(moreBtn) moreBtn.classList.add('active');
+  if(name==='stock') refreshStock();
+  if(name==='products') refreshProducts();
+  if(name==='goals') refreshGoals();
+  if(name==='reports') refreshReports();
+  window.scrollTo(0,0);
 }
 
-function backToMore() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+function backToMore(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('pg-more').classList.add('active');
-  // highlight More nav button
-  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.nb')[5].classList.add('active');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  const moreBtn=document.querySelector('.nb:last-child');
+  if(moreBtn) moreBtn.classList.add('active');
+  window.scrollTo(0,0);
 }
 
-function showSubPage(name) { showFullPage(name); }
+function showSubPage(name){ showFullPage(name); }
 
-// =============================================
-// DASHBOARD
-// =============================================
-function setPeriod(p, btn) {
-  period = p;
-  document.querySelectorAll('#pg-dash .ptab').forEach(b => b.classList.remove('active'));
+// ── DASHBOARD ──
+function setPeriod(p,btn){
+  period=p;
+  document.querySelectorAll('#pg-dash .ptab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   refreshDash();
 }
 
-function refreshDash() {
-  const txs = cache.transactions;
-  const filtered = txs.filter(t => inPeriod(t.date, period));
-  const income = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0);
-  const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (t.amount || 0), 0);
-  const hairCost = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (t.hair_cost || 0), 0);
-  const profit = income - expense - hairCost;
-  const tax = Math.max(0, profit * TAX_RATE);
+function refreshDash(){
+  const txs=cache.transactions;
+  const filtered=txs.filter(t=>inPeriod(t.date,period));
+  const income=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+  const expense=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+  const hairCost=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(t.hair_cost||0),0);
+  const profit=income-expense-hairCost;
+  const tax=Math.max(0,profit*TAX_RATE);
 
-  document.getElementById('d-income').textContent = yen(income);
-  document.getElementById('d-expense').textContent = yen(expense);
-  document.getElementById('d-profit').textContent = yen(profit);
-  document.getElementById('d-profit').className = 'cval ' + (profit >= 0 ? 'o' : 'r');
-  document.getElementById('d-tax').textContent = yen(tax);
-  document.getElementById('d-hair-cost').textContent = hairCost > 0 ? `Hair cost: -${yen(hairCost)}` : '';
+  document.getElementById('d-income').textContent=yen(income);
+  document.getElementById('d-expense').textContent=yen(expense);
+  document.getElementById('d-profit').textContent=yen(profit);
+  document.getElementById('d-profit').className='cval '+(profit>=0?'o':'r');
+  document.getElementById('d-tax').textContent=yen(tax);
+  document.getElementById('d-hair-cost').textContent=hairCost>0?`Hair cost: -${yen(hairCost)}`:'';
 
-  const allIncome = txs.filter(t => t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0);
-  const allExp = txs.filter(t => t.type === 'expense').reduce((s, t) => s + (t.amount || 0), 0);
-  const allHair = txs.filter(t => t.type === 'income').reduce((s, t) => s + (t.hair_cost || 0), 0);
-  const allProfit = Math.max(0, allIncome - allExp - allHair);
-  document.getElementById('d-alltax').textContent = yen(allProfit * TAX_RATE);
+  const allIncome=txs.filter(t=>t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+  const allExp=txs.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+  const allHair=txs.filter(t=>t.type==='income').reduce((s,t)=>s+(t.hair_cost||0),0);
+  const allProfit=Math.max(0,allIncome-allExp-allHair);
+  document.getElementById('d-alltax').textContent=yen(allProfit*TAX_RATE);
 
-  const yearIncome = txs.filter(t => t.type === 'income' && inPeriod(t.date, 'yearly')).reduce((s, t) => s + (t.amount || 0), 0);
-  const pct = Math.min(100, Math.round(yearIncome / ANNUAL_GOAL * 100));
-  document.getElementById('d-prog').style.width = pct + '%';
-  document.getElementById('d-prog-label').textContent = `${yen(yearIncome)} of ${yen(ANNUAL_GOAL)} (${pct}%)`;
+  const yearIncome=txs.filter(t=>t.type==='income'&&inPeriod(t.date,'yearly')).reduce((s,t)=>s+(t.amount||0),0);
+  const pct=Math.min(100,Math.round(yearIncome/ANNUAL_GOAL*100));
+  document.getElementById('d-prog').style.width=pct+'%';
+  document.getElementById('d-prog-label').textContent=`${yen(yearIncome)} of ${yen(ANNUAL_GOAL)} (${pct}%)`;
 
   renderChart();
-  renderTxList(txs.slice(0, 6), 'd-recent');
+  renderTxList(txs.slice(0,6),'d-recent');
 }
 
-function renderChart() {
-  const txs = cache.transactions;
-  const months = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(); d.setMonth(d.getMonth() - i);
-    months.push(d.toISOString().substring(0, 7));
+function renderChart(){
+  const txs=cache.transactions;
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(); d.setMonth(d.getMonth()-i);
+    months.push(d.toISOString().substring(0,7));
   }
-  const maxV = Math.max(1, ...months.map(m => {
-    const inc = txs.filter(t => t.date?.startsWith(m) && t.type === 'income').reduce((s, t) => s + (t.amount||0), 0);
-    const exp = txs.filter(t => t.date?.startsWith(m) && t.type === 'expense').reduce((s, t) => s + (t.amount||0), 0);
-    return Math.max(inc, exp);
+  const maxV=Math.max(1,...months.map(m=>{
+    const inc=txs.filter(t=>t.date?.startsWith(m)&&t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+    const exp=txs.filter(t=>t.date?.startsWith(m)&&t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+    return Math.max(inc,exp);
   }));
-  document.getElementById('d-chart').innerHTML = months.map(m => {
-    const inc = txs.filter(t => t.date?.startsWith(m) && t.type === 'income').reduce((s, t) => s + (t.amount||0), 0);
-    const exp = txs.filter(t => t.date?.startsWith(m) && t.type === 'expense').reduce((s, t) => s + (t.amount||0), 0);
-    const iH = Math.round(inc / maxV * 65); const eH = Math.round(exp / maxV * 65);
-    const label = new Date(m + '-01').toLocaleDateString('en', { month: 'short' });
+  document.getElementById('d-chart').innerHTML=months.map(m=>{
+    const inc=txs.filter(t=>t.date?.startsWith(m)&&t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+    const exp=txs.filter(t=>t.date?.startsWith(m)&&t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+    const iH=Math.round(inc/maxV*65); const eH=Math.round(exp/maxV*65);
+    const label=new Date(m+'-01').toLocaleDateString('en',{month:'short'});
     return `<div class="bgroup"><div class="bwrap"><div class="bar bi" style="height:${iH}px"></div><div class="bar be" style="height:${eH}px"></div></div><div class="blabel">${label}</div></div>`;
   }).join('');
 }
 
-// =============================================
-// TRANSACTIONS
-// =============================================
-function setTxType(t) {
-  txType = t;
-  document.getElementById('tt-i').className = 'ttbtn i' + (t === 'income' ? ' on' : '');
-  document.getElementById('tt-e').className = 'ttbtn e' + (t === 'expense' ? ' on' : '');
+// ── TRANSACTIONS ──
+function setTxType(t){
+  txType=t;
+  document.getElementById('tt-i').className='ttbtn i'+(t==='income'?' on':'');
+  document.getElementById('tt-e').className='ttbtn e'+(t==='expense'?' on':'');
   checkHairSection();
 }
 
-function checkHairSection() {
-  const cat = document.getElementById('f-cat').value;
-  const show = txType === 'income' && HAIR_SERVICES.includes(cat);
-  document.getElementById('hairSection').style.display = show ? 'block' : 'none';
-  if (!show) { document.getElementById('hairCostPreview').textContent = ''; document.getElementById('netPreview').textContent = ''; }
+function checkHairSection(){
+  const cat=document.getElementById('f-cat').value;
+  const show=txType==='income'&&HAIR_SERVICES.includes(cat);
+  document.getElementById('hairSection').style.display=show?'block':'none';
+  if(!show){
+    document.getElementById('hairCostPreview').textContent='';
+    document.getElementById('netPreview').textContent='';
+  }
 }
 
-function calcHairCost() {
-  const packs = parseFloat(document.getElementById('f-packs').value) || 0;
-  const cost = parseFloat(document.getElementById('f-pack-cost').value) || 0;
-  const total = packs * cost;
-  const amt = parseFloat(document.getElementById('f-amt').value) || 0;
-  document.getElementById('hairCostPreview').textContent = total > 0 ? `Hair cost: -${yen(total)}` : '';
-  document.getElementById('netPreview').textContent = amt > 0 && total > 0 ? `Net profit: ${yen(amt - total)}` : '';
+function calcHairCost(){
+  const packs=parseFloat(document.getElementById('f-packs').value)||0;
+  const cost=parseFloat(document.getElementById('f-pack-cost').value)||0;
+  const total=packs*cost;
+  const amt=parseFloat(document.getElementById('f-amt').value)||0;
+  document.getElementById('hairCostPreview').textContent=total>0?`Hair cost: -${yen(total)}`:'';
+  document.getElementById('netPreview').textContent=amt>0&&total>0?`Net profit: ${yen(amt-total)}`:'';
 }
 
-async function saveTx() {
-  const amount = parseFloat(document.getElementById('f-amt').value);
-  const date = document.getElementById('f-date').value;
-  const desc = document.getElementById('f-desc').value.trim();
-  if (!amount || !date || !desc) { toast('Please fill amount, date and description'); return; }
+async function saveTx(){
+  const amount=parseFloat(document.getElementById('f-amt').value);
+  const date=document.getElementById('f-date').value;
+  const desc=document.getElementById('f-desc').value.trim();
+  if(!amount||!date||!desc){ toast('Please fill amount, date and description'); return; }
 
-  const cat = document.getElementById('f-cat').value;
-  const hairPacks = parseFloat(document.getElementById('f-packs').value) || 0;
-  const hairPackCost = parseFloat(document.getElementById('f-pack-cost').value) || 0;
-  const hairCost = hairPacks * hairPackCost;
+  const cat=document.getElementById('f-cat').value;
+  const hairPacks=parseFloat(document.getElementById('f-packs').value)||0;
+  const hairPackCost=parseFloat(document.getElementById('f-pack-cost').value)||0;
+  const hairCost=hairPacks*hairPackCost;
+  const clientName=document.getElementById('f-client').value.trim();
 
-  const btn = document.getElementById('saveTxBtn');
-  btn.disabled = true; btn.textContent = 'Saving...';
+  const btn=document.getElementById('saveTxBtn');
+  btn.disabled=true; btn.textContent='Saving...';
 
-  await dbInsert('transactions', {
-    type: txType, amount, date, description: desc,
-    category: cat,
-    client_name: document.getElementById('f-client').value.trim(),
-    hair_packs: hairPacks, hair_cost: hairCost,
-    net_amount: txType === 'income' ? amount - hairCost : amount,
-    notes: document.getElementById('f-notes').value.trim(),
+  const tx = await dbInsert('transactions',{
+    type:txType, amount, date, description:desc,
+    category:cat, client_name:clientName,
+    hair_packs:hairPacks, hair_cost:hairCost,
+    net_amount:txType==='income'?amount-hairCost:amount,
+    notes:document.getElementById('f-notes').value.trim(),
   });
 
-  // Deduct from stock if hair used
-  if (hairPacks > 0) {
-    const stocks = cache.hair_stock;
-    if (stocks.length > 0) {
-      const s = stocks[0];
-      await dbUpdate('hair_stock', s.id, { packs_in_stock: Math.max(0, (s.packs_in_stock || 0) - hairPacks) });
+  // Auto-deduct hair from stock (find best matching stock item)
+  if(hairPacks>0 && cache.hair_stock.length>0){
+    // Find stock with most packs (most likely what was used)
+    const stock=cache.hair_stock.reduce((best,s)=>(s.packs_in_stock||0)>(best.packs_in_stock||0)?s:best);
+    await dbUpdate('hair_stock',stock.id,{packs_in_stock:Math.max(0,(stock.packs_in_stock||0)-hairPacks)});
+  }
+
+  // Auto-update client stats
+  if(clientName && txType==='income'){
+    const client=cache.clients.find(c=>c.name.toLowerCase()===clientName.toLowerCase());
+    if(client){
+      await dbUpdate('clients',client.id,{
+        total_spent:(client.total_spent||0)+amount,
+        total_visits:(client.total_visits||0)+1,
+        last_visit:date
+      });
     }
   }
 
-  btn.disabled = false; btn.textContent = 'Add Transaction ✦';
-  document.getElementById('f-amt').value = '';
-  document.getElementById('f-desc').value = '';
-  document.getElementById('f-client').value = '';
-  document.getElementById('f-notes').value = '';
-  document.getElementById('f-packs').value = '';
-  document.getElementById('f-pack-cost').value = '';
-  document.getElementById('hairSection').style.display = 'none';
-  document.getElementById('hairCostPreview').textContent = '';
-  document.getElementById('netPreview').textContent = '';
-  toast(txType === 'income' ? `✦ Income ${yen(amount)} saved!` : `💸 Expense ${yen(amount)} saved!`);
+  btn.disabled=false; btn.textContent='Add Transaction ✦';
+  document.getElementById('f-amt').value='';
+  document.getElementById('f-desc').value='';
+  document.getElementById('f-client').value='';
+  document.getElementById('f-notes').value='';
+  document.getElementById('f-packs').value='';
+  document.getElementById('f-pack-cost').value='';
+  document.getElementById('hairSection').style.display='none';
+  document.getElementById('hairCostPreview').textContent='';
+  document.getElementById('netPreview').textContent='';
+  document.getElementById('f-cat').value='';
+
+  toast(txType==='income'?`✦ ${yen(amount)} income saved!`:`💸 ${yen(amount)} expense saved!`);
   refreshDash();
 }
 
-function quickAdd(name, amount, cat) {
+function quickAdd(name,amount,cat){
   setTxType('income');
-  document.getElementById('f-amt').value = amount;
-  document.getElementById('f-desc').value = name;
-  document.getElementById('f-cat').value = cat;
-  document.getElementById('f-date').value = today();
+  document.getElementById('f-amt').value=amount;
+  document.getElementById('f-desc').value=name;
+  document.getElementById('f-cat').value=cat;
+  document.getElementById('f-date').value=today();
   checkHairSection();
-  toast('Ready — add client name and tap save!');
-  showPage('add', document.querySelectorAll('.nb')[1]);
+  // Scroll to top of add page
+  document.getElementById('pg-add').scrollTop=0;
+  window.scrollTo(0,0);
+  toast('Filled! Add client name then tap save 💛');
 }
 
-function renderTxList(txs, elId, showDel = false) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  if (!txs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">📭</div><p>No transactions yet.</p></div>';
+function renderTxList(txs,elId,showDel=false){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  if(!txs.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>No transactions yet.<br/>Tap Add to get started!</p></div>';
     return;
   }
-  el.innerHTML = txs.map(t => {
-    const hairNote = t.hair_cost > 0 ? `<span class="txhair">-${yen(t.hair_cost)} hair</span>` : '';
-    return `<div class="txitem" onclick="openTxDetail(${t.id})">
-      <div class="txdot ${t.type === 'income' ? 'i' : 'e'}">${t.type === 'income' ? '💰' : '💸'}</div>
+  el.innerHTML=txs.map(t=>{
+    const hairNote=t.hair_cost>0?`<span class="txhair">-${yen(t.hair_cost)} hair</span>`:'';
+    return `<div class="txitem" onclick="openTxDetail(${t.id},false)">
+      <div class="txdot ${t.type==='income'?'i':'e'}">${t.type==='income'?'💰':'💸'}</div>
       <div class="txinfo">
-        <div class="txname">${t.description}${t.category ? `<span class="txtag">${t.category}</span>` : ''}</div>
-        <div class="txmeta">${fmtDate(t.date)}${t.client_name ? ' · ' + t.client_name : ''}${hairNote}</div>
+        <div class="txname">${t.description}${t.category?`<span class="txtag">${t.category}</span>`:''}</div>
+        <div class="txmeta">${fmtDate(t.date)}${t.client_name?' · '+t.client_name:''}${hairNote}</div>
       </div>
-      <div class="txamt ${t.type === 'income' ? 'i' : 'e'}">${t.type === 'income' ? '+' : '-'}${yen(t.amount)}</div>
+      <div class="txamt ${t.type==='income'?'i':'e'}">${t.type==='income'?'+':'-'}${yen(t.amount)}</div>
     </div>`;
   }).join('');
 }
 
-function openTxDetail(id) {
-  const t = cache.transactions.find(x => x.id == id);
-  if (!t) return;
-  currentTxId = id;
-  document.getElementById('tx-modal-title').textContent = t.description;
-  document.getElementById('tx-modal-body').innerHTML = `
-    <div class="report-row"><span class="report-key">Type</span><span class="report-val" style="color:${t.type==='income'?'var(--green)':'var(--red)'};">${t.type === 'income' ? '💰 Income' : '💸 Expense'}</span></div>
-    <div class="report-row"><span class="report-key">Amount</span><span class="report-val">${yen(t.amount)}</span></div>
-    ${t.hair_cost > 0 ? `<div class="report-row"><span class="report-key">Hair Cost</span><span class="report-val" style="color:var(--red)">-${yen(t.hair_cost)} (${t.hair_packs} packs)</span></div>
-    <div class="report-row"><span class="report-key">Net Profit</span><span class="report-val" style="color:var(--green)">${yen(t.amount - t.hair_cost)}</span></div>` : ''}
-    <div class="report-row"><span class="report-key">Date</span><span class="report-val">${fmtDateFull(t.date)}</span></div>
-    ${t.category ? `<div class="report-row"><span class="report-key">Category</span><span class="report-val">${t.category}</span></div>` : ''}
-    ${t.client_name ? `<div class="report-row"><span class="report-key">Client</span><span class="report-val">${t.client_name}</span></div>` : ''}
-    ${t.notes ? `<div class="report-row"><span class="report-key">Notes</span><span class="report-val">${t.notes}</span></div>` : ''}
-  `;
+function openTxDetail(id,isClient=false){
+  currentTxIsClient=isClient;
+  if(isClient){
+    const c=cache.clients.find(x=>x.id==id);
+    if(!c) return;
+    currentTxId=id;
+    const txs=cache.transactions.filter(t=>t.client_name&&t.client_name.toLowerCase()===c.name.toLowerCase());
+    const totalSpent=txs.reduce((s,t)=>s+(t.amount||0),0);
+    document.getElementById('tx-modal-title').textContent=c.name;
+    document.getElementById('tx-modal-body').innerHTML=`
+      <div class="report-row"><span class="report-key">Phone</span><span class="report-val">${c.phone||'—'}</span></div>
+      <div class="report-row"><span class="report-key">Contact via</span><span class="report-val">${c.contact_method||'WhatsApp'}</span></div>
+      <div class="report-row"><span class="report-key">Preferred Style</span><span class="report-val">${c.preferred_style||'—'}</span></div>
+      <div class="report-row"><span class="report-key">Total Spent</span><span class="report-val" style="color:var(--green)">${yen(totalSpent)}</span></div>
+      <div class="report-row"><span class="report-key">Visits</span><span class="report-val">${txs.length}</span></div>
+      ${c.last_visit?`<div class="report-row"><span class="report-key">Last Visit</span><span class="report-val">${fmtDateFull(c.last_visit)}</span></div>`:''}
+      ${c.notes?`<div class="report-row"><span class="report-key">Notes</span><span class="report-val">${c.notes}</span></div>`:''}
+      <div style="margin-top:12px;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:6px">RECENT VISITS</div>
+      ${txs.slice(0,3).map(t=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.8rem;"><span>${t.description} · ${fmtDate(t.date)}</span><span style="color:var(--green);font-weight:600">${yen(t.amount)}</span></div>`).join('')}
+    `;
+  } else {
+    const t=cache.transactions.find(x=>x.id==id);
+    if(!t) return;
+    currentTxId=id;
+    document.getElementById('tx-modal-title').textContent=t.description;
+    document.getElementById('tx-modal-body').innerHTML=`
+      <div class="report-row"><span class="report-key">Type</span><span class="report-val" style="color:${t.type==='income'?'var(--green)':'var(--red)'}">${t.type==='income'?'💰 Income':'💸 Expense'}</span></div>
+      <div class="report-row"><span class="report-key">Amount</span><span class="report-val">${yen(t.amount)}</span></div>
+      ${t.hair_cost>0?`
+      <div class="report-row"><span class="report-key">Hair Cost</span><span class="report-val" style="color:var(--red)">-${yen(t.hair_cost)} (${t.hair_packs} packs)</span></div>
+      <div class="report-row"><span class="report-key">Net Profit</span><span class="report-val" style="color:var(--green)">${yen((t.amount||0)-(t.hair_cost||0))}</span></div>`:''}
+      <div class="report-row"><span class="report-key">Date</span><span class="report-val">${fmtDateFull(t.date)}</span></div>
+      ${t.category?`<div class="report-row"><span class="report-key">Category</span><span class="report-val">${t.category}</span></div>`:''}
+      ${t.client_name?`<div class="report-row"><span class="report-key">Client</span><span class="report-val">${t.client_name}</span></div>`:''}
+      ${t.notes?`<div class="report-row"><span class="report-key">Notes</span><span class="report-val">${t.notes}</span></div>`:''}
+    `;
+  }
+  // Show receipt button only for income transactions
+  const receiptBtn=document.getElementById('receiptBtn');
+  if(receiptBtn) receiptBtn.style.display=(!isClient&&cache.transactions.find(x=>x.id==id)?.type==='income')?'block':'none';
   openModal('txModal');
 }
 
-async function deleteTx() {
-  if (!confirm('Delete this transaction?')) return;
-  await dbDelete('transactions', currentTxId);
+async function deleteTx(){
+  if(currentTxIsClient){
+    if(!confirm('Delete this client?')) return;
+    await dbDelete('clients',currentTxId);
+    closeModal('txModal');
+    refreshClients();
+    toast('Client deleted');
+    return;
+  }
+  if(!confirm('Delete this transaction?')) return;
+  await dbDelete('transactions',currentTxId);
   closeModal('txModal');
   refreshDash();
   refreshLog();
   toast('Deleted');
 }
 
-// LOG
-function setLogPeriod(p, btn) {
-  logPeriod = p;
-  document.querySelectorAll('#pg-log .ptab').forEach(b => b.classList.remove('active'));
+// ── LOG ──
+function setLogPeriod(p,btn){
+  logPeriod=p;
+  document.querySelectorAll('#pg-log .ptab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   refreshLog();
 }
 
-function refreshLog() {
-  const txs = cache.transactions;
-  const filtered = logPeriod === 'all' ? txs : txs.filter(t => inPeriod(t.date, logPeriod));
-  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (t.amount||0), 0);
-  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (t.amount||0), 0);
-  document.getElementById('l-inc').textContent = yen(inc);
-  document.getElementById('l-exp').textContent = yen(exp);
-  renderTxList(filtered, 'l-list', true);
+function refreshLog(){
+  const txs=cache.transactions;
+  const filtered=logPeriod==='all'?txs:txs.filter(t=>inPeriod(t.date,logPeriod));
+  const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+  const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+  document.getElementById('l-inc').textContent=yen(inc);
+  document.getElementById('l-exp').textContent=yen(exp);
+  renderTxList(filtered,'l-list',true);
 }
 
-// =============================================
-// APPOINTMENTS
-// =============================================
-function setApptFilter(f, btn) {
-  apptFilter = f;
-  document.querySelectorAll('#pg-appt .ptab').forEach(b => b.classList.remove('active'));
+// ── APPOINTMENTS ──
+function setApptFilter(f,btn){
+  apptFilter=f;
+  document.querySelectorAll('#pg-appt .ptab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   refreshAppts();
 }
 
-function refreshAppts() {
-  let appts = cache.appointments;
-  if (apptFilter !== 'all') appts = appts.filter(a => a.status === apptFilter);
-  appts = appts.sort((a, b) => a.date > b.date ? 1 : -1);
-  const el = document.getElementById('appt-list');
-  if (!appts.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">📅</div><p>No appointments found.<br/>Tap + Add to create one!</p></div>'; return; }
-  el.innerHTML = appts.map(a => {
-    const d = new Date(a.date + 'T00:00:00');
-    const day = d.getDate();
-    const mon = d.toLocaleDateString('en', { month: 'short' });
+function refreshAppts(){
+  let appts=[...cache.appointments];
+  if(apptFilter!=='all') appts=appts.filter(a=>a.status===apptFilter);
+  appts.sort((a,b)=>a.date>b.date?1:-1);
+  const el=document.getElementById('appt-list');
+  if(!appts.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📅</div><p>No appointments found.<br/>Tap + Add to create one!</p></div>'; return; }
+  el.innerHTML=appts.map(a=>{
+    const d=new Date(a.date+'T00:00:00');
     return `<div class="appt-card">
-      <div class="appt-date-box"><div class="appt-day">${day}</div><div class="appt-mon">${mon}</div></div>
+      <div class="appt-date-box"><div class="appt-day">${d.getDate()}</div><div class="appt-mon">${d.toLocaleDateString('en',{month:'short'})}</div></div>
       <div class="appt-info">
         <div class="appt-name">${a.client_name}</div>
         <div class="appt-service">${a.service} · ${a.time}</div>
         <span class="status-badge s-${a.status}">${a.status}</span>
-        ${a.notes ? `<div style="font-size:.68rem;color:var(--muted);margin-top:3px">${a.notes}</div>` : ''}
+        ${a.notes?`<div style="font-size:.68rem;color:var(--muted);margin-top:3px">${a.notes}</div>`:''}
         <div class="appt-actions">
-          ${a.status === 'upcoming' ? `<button class="btn-sm" onclick="updateApptStatus(${a.id},'completed')">✓ Done</button>
+          ${a.status==='upcoming'?`
+          <button class="btn-sm" onclick="completeAppt(${a.id})">✓ Done</button>
           <button class="btn-sm" onclick="updateApptStatus(${a.id},'cancelled')">Cancel</button>
-          <button class="btn-sm" onclick="updateApptStatus(${a.id},'no-show')">No-show</button>` : ''}
+          <button class="btn-sm" onclick="updateApptStatus(${a.id},'no-show')">No-show</button>`:''}
           <button class="btn-del" onclick="deleteAppt(${a.id})">Delete</button>
         </div>
       </div>
-      ${a.amount ? `<div class="appt-amt">${yen(a.amount)}</div>` : ''}
+      ${a.amount?`<div class="appt-amt">${yen(a.amount)}</div>`:''}
     </div>`;
   }).join('');
 }
 
-async function saveAppt() {
-  const client = document.getElementById('am-client').value.trim();
-  const date = document.getElementById('am-date').value;
-  const time = document.getElementById('am-time').value;
-  const service = document.getElementById('am-service').value;
-  if (!client || !date) { toast('Please fill client name and date'); return; }
-  await dbInsert('appointments', {
-    client_name: client, date, time, service, status: 'upcoming',
-    amount: parseFloat(document.getElementById('am-amt').value) || null,
-    hair_packs: parseInt(document.getElementById('am-packs').value) || 0,
-    notes: document.getElementById('am-notes').value.trim(),
+async function completeAppt(id){
+  const a=cache.appointments.find(x=>x.id==id);
+  if(!a) return;
+  await dbUpdate('appointments',id,{status:'completed'});
+  // Offer to log as income
+  if(a.amount && confirm(`Mark as done! Log ¥${a.amount.toLocaleString()} as income for ${a.client_name}?`)){
+    await dbInsert('transactions',{
+      type:'income', amount:a.amount, date:a.date,
+      description:a.service, category:'Braiding Service',
+      client_name:a.client_name,
+      hair_packs:a.hair_packs||0, hair_cost:0,
+      notes:'From appointment'
+    });
+    // Update client stats
+    const client=cache.clients.find(c=>c.name.toLowerCase()===a.client_name.toLowerCase());
+    if(client){
+      await dbUpdate('clients',client.id,{
+        total_spent:(client.total_spent||0)+a.amount,
+        total_visits:(client.total_visits||0)+1,
+        last_visit:a.date
+      });
+    }
+    refreshDash();
+    toast('Appointment done + income logged! 💛');
+  } else {
+    toast('Marked as completed ✓');
+  }
+  refreshAppts();
+}
+
+async function updateApptStatus(id,status){
+  await dbUpdate('appointments',id,{status});
+  refreshAppts();
+  toast('Updated to '+status);
+}
+
+async function saveAppt(){
+  const client=document.getElementById('am-client').value.trim();
+  const date=document.getElementById('am-date').value;
+  const time=document.getElementById('am-time').value;
+  const service=document.getElementById('am-service').value;
+  if(!client||!date){ toast('Please fill client name and date'); return; }
+  await dbInsert('appointments',{
+    client_name:client, date, time, service, status:'upcoming',
+    amount:parseFloat(document.getElementById('am-amt').value)||null,
+    hair_packs:parseInt(document.getElementById('am-packs').value)||0,
+    notes:document.getElementById('am-notes').value.trim(),
   });
   closeModal('apptModal');
-  document.getElementById('am-client').value = '';
-  document.getElementById('am-amt').value = '';
-  document.getElementById('am-packs').value = '';
-  document.getElementById('am-notes').value = '';
+  ['am-client','am-amt','am-packs','am-notes'].forEach(id=>document.getElementById(id).value='');
   refreshAppts();
-  toast('Appointment saved!');
+  toast('Appointment saved! 📅');
 }
 
-async function updateApptStatus(id, status) {
-  await dbUpdate('appointments', id, { status });
-  refreshAppts();
-  toast('Updated to ' + status);
-}
-
-async function deleteAppt(id) {
-  if (!confirm('Delete appointment?')) return;
-  await dbDelete('appointments', id);
+async function deleteAppt(id){
+  if(!confirm('Delete appointment?')) return;
+  await dbDelete('appointments',id);
   refreshAppts();
   toast('Deleted');
 }
 
-// =============================================
-// CLIENTS
-// =============================================
-function refreshClients() {
-  const clients = cache.clients;
-  const el = document.getElementById('client-list');
-  if (!clients.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">👥</div><p>No clients yet.<br/>Tap + Add Client to start!</p></div>'; return; }
-  el.innerHTML = clients.map(c => `
-    <div class="client-card" onclick="openClientDetail(${c.id})">
+// ── CLIENTS ──
+function refreshClients(){
+  const clients=[...cache.clients].sort((a,b)=>(b.total_spent||0)-(a.total_spent||0));
+  const el=document.getElementById('client-list');
+  if(!clients.length){ el.innerHTML='<div class="empty"><div class="empty-ico">👥</div><p>No clients yet.<br/>Tap + Add Client to start!</p></div>'; return; }
+  el.innerHTML=clients.map(c=>`
+    <div class="client-card" onclick="openTxDetail(${c.id},true)">
       <div class="client-avatar">${initials(c.name)}</div>
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="client-name">${c.name}</div>
-        <div class="client-meta">${c.phone || 'No phone'} · ${c.contact_method || 'WhatsApp'}</div>
-        ${c.preferred_style ? `<div class="client-meta">Prefers: ${c.preferred_style}</div>` : ''}
+        <div class="client-meta">${c.phone||'No phone'} · ${c.contact_method||'WhatsApp'}</div>
+        ${c.preferred_style?`<div class="client-meta">Prefers: ${c.preferred_style}</div>`:''}
       </div>
       <div class="client-stats">
-        <div class="client-stat-val">${yen(c.total_spent || 0)}</div>
-        <div class="client-stat-label">${c.total_visits || 0} visits</div>
-        ${c.last_visit ? `<div class="client-stat-label">${fmtDate(c.last_visit)}</div>` : ''}
+        <div class="client-stat-val">${yen(c.total_spent||0)}</div>
+        <div class="client-stat-label">${c.total_visits||0} visits</div>
+        ${c.last_visit?`<div class="client-stat-label">${fmtDate(c.last_visit)}</div>`:''}
       </div>
     </div>
   `).join('');
 }
 
-async function saveClient() {
-  const name = document.getElementById('cm-name').value.trim();
-  if (!name) { toast('Please enter a name'); return; }
-  await dbInsert('clients', {
-    name, phone: document.getElementById('cm-phone').value.trim(),
-    contact_method: document.getElementById('cm-contact').value,
-    preferred_style: document.getElementById('cm-style').value.trim(),
-    notes: document.getElementById('cm-notes').value.trim(),
+async function saveClient(){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){ toast('Please enter a name'); return; }
+  await dbInsert('clients',{
+    name, phone:document.getElementById('cm-phone').value.trim(),
+    contact_method:document.getElementById('cm-contact').value,
+    preferred_style:document.getElementById('cm-style').value.trim(),
+    notes:document.getElementById('cm-notes').value.trim(),
+    total_visits:0, total_spent:0,
   });
   closeModal('clientModal');
-  document.getElementById('cm-name').value = '';
-  document.getElementById('cm-phone').value = '';
-  document.getElementById('cm-style').value = '';
-  document.getElementById('cm-notes').value = '';
+  ['cm-name','cm-phone','cm-style','cm-notes'].forEach(id=>document.getElementById(id).value='');
   refreshClients();
-  toast('Client saved!');
+  toast('Client saved! 👤');
 }
 
-function openClientDetail(id) {
-  const c = cache.clients.find(x => x.id == id);
-  if (!c) return;
-  const txs = cache.transactions.filter(t => t.client_name && t.client_name.toLowerCase() === c.name.toLowerCase());
-  currentTxId = id;
-  document.getElementById('tx-modal-title').textContent = c.name;
-  document.getElementById('tx-modal-body').innerHTML = `
-    <div class="report-row"><span class="report-key">Phone</span><span class="report-val">${c.phone || '—'}</span></div>
-    <div class="report-row"><span class="report-key">Contact via</span><span class="report-val">${c.contact_method || 'WhatsApp'}</span></div>
-    <div class="report-row"><span class="report-key">Preferred Style</span><span class="report-val">${c.preferred_style || '—'}</span></div>
-    <div class="report-row"><span class="report-key">Total Spent</span><span class="report-val" style="color:var(--green)">${yen(txs.reduce((s,t)=>s+(t.amount||0),0))}</span></div>
-    <div class="report-row"><span class="report-key">Visits</span><span class="report-val">${txs.length}</span></div>
-    ${c.notes ? `<div class="report-row"><span class="report-key">Notes</span><span class="report-val">${c.notes}</span></div>` : ''}
-  `;
-  document.getElementById('tx-modal-body').innerHTML += `<div style="margin-top:10px;font-size:.78rem;font-weight:600;color:var(--muted)">Recent Transactions</div>` +
-    txs.slice(0,3).map(t=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem;"><span>${t.description} · ${fmtDate(t.date)}</span><span style="color:var(--green);font-weight:600">${yen(t.amount)}</span></div>`).join('');
-  openModal('txModal');
-}
-
-// =============================================
-// HAIR STOCK
-// =============================================
-function refreshStock() {
-  const stocks = cache.hair_stock;
-  const el = document.getElementById('stock-list');
-  if (!stocks.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">📦</div><p>No hair stock added yet.</p></div>'; return; }
-  el.innerHTML = stocks.map(s => {
-    const low = (s.packs_in_stock || 0) <= (s.low_stock_alert || 3);
-    return `<div class="stock-card ${low ? 'low' : ''}">
+// ── HAIR STOCK ──
+function refreshStock(){
+  const stocks=cache.hair_stock;
+  const totalPacks=stocks.reduce((s,x)=>s+(x.packs_in_stock||0),0);
+  const lowItems=stocks.filter(s=>(s.packs_in_stock||0)<=(s.low_stock_alert||3)).length;
+  const summaryEl=document.getElementById('stock-summary');
+  if(summaryEl) summaryEl.innerHTML=`
+    <div class="card"><div class="clabel">Total Packs</div><div class="cval o">${totalPacks}</div></div>
+    <div class="card"><div class="clabel">⚠ Low Stock</div><div class="cval ${lowItems>0?'r':'g'}">${lowItems}</div></div>`;
+  const el=document.getElementById('stock-list');
+  if(!el) return;
+  if(!stocks.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>No hair stock added yet.<br/>Tap + Add to get started!</p></div>'; return; }
+  el.innerHTML=stocks.map(s=>{
+    const low=(s.packs_in_stock||0)<=(s.low_stock_alert||3);
+    return `<div class="stock-card ${low?'low':''}">
       <div class="stock-ico">💇</div>
       <div class="stock-info">
         <div class="stock-name">${s.name}</div>
-        <div class="stock-meta">${s.brand || ''} ${s.colour || ''} ${s.length_inches ? '· ' + s.length_inches : ''}</div>
+        <div class="stock-meta">${[s.brand,s.colour,s.length_inches?s.length_inches+'"':''].filter(Boolean).join(' · ')}</div>
         <div class="stock-meta">${yen(s.cost_per_pack)}/pack</div>
-        ${low ? '<span class="low-badge">⚠ Low Stock</span>' : ''}
+        ${low?'<span class="low-badge">⚠ Low Stock — reorder soon!</span>':''}
       </div>
       <div class="stock-count">
-        <div class="stock-num">${s.packs_in_stock || 0}</div>
+        <div class="stock-num">${s.packs_in_stock||0}</div>
         <div class="stock-unit">packs</div>
-        <div style="display:flex;gap:4px;margin-top:4px">
-          <button class="btn-sm" style="padding:3px 8px;font-size:.7rem" onclick="adjustStock(${s.id},1)">+</button>
-          <button class="btn-sm" style="padding:3px 8px;font-size:.7rem" onclick="adjustStock(${s.id},-1)">−</button>
-          <button class="btn-del" style="padding:3px 8px;font-size:.7rem" onclick="deleteStock(${s.id})">🗑</button>
+        <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+          <button class="btn-sm" style="padding:4px 10px;font-size:.72rem" onclick="adjustStock(${s.id},1)">+ Add</button>
+          <button class="btn-sm" style="padding:4px 10px;font-size:.72rem" onclick="adjustStock(${s.id},-1)">− Use</button>
+          <button class="btn-del" style="padding:4px 8px;font-size:.7rem" onclick="deleteStock(${s.id})">🗑</button>
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-async function saveStock() {
-  const name = document.getElementById('sk-name').value.trim();
-  const packs = parseInt(document.getElementById('sk-packs').value) || 0;
-  const cost = parseFloat(document.getElementById('sk-cost').value) || 0;
-  if (!name || !cost) { toast('Please fill name and cost'); return; }
-  await dbInsert('hair_stock', {
-    name, brand: document.getElementById('sk-brand').value.trim(),
-    colour: document.getElementById('sk-colour').value.trim(),
-    length_inches: document.getElementById('sk-length').value.trim(),
-    packs_in_stock: packs, cost_per_pack: cost,
-    low_stock_alert: parseInt(document.getElementById('sk-alert').value) || 3,
+async function saveStock(){
+  const name=document.getElementById('sk-name').value.trim();
+  const cost=parseFloat(document.getElementById('sk-cost').value)||0;
+  if(!name||!cost){ toast('Please fill name and cost per pack'); return; }
+  await dbInsert('hair_stock',{
+    name, brand:document.getElementById('sk-brand').value.trim(),
+    colour:document.getElementById('sk-colour').value.trim(),
+    length_inches:document.getElementById('sk-length').value.trim(),
+    packs_in_stock:parseInt(document.getElementById('sk-packs').value)||0,
+    cost_per_pack:cost,
+    low_stock_alert:parseInt(document.getElementById('sk-alert').value)||3,
   });
   closeModal('stockModal');
-  ['sk-name','sk-brand','sk-colour','sk-length','sk-packs','sk-cost'].forEach(id => document.getElementById(id).value = '');
+  ['sk-name','sk-brand','sk-colour','sk-length','sk-packs','sk-cost'].forEach(id=>document.getElementById(id).value='');
   refreshStock();
-  toast('Stock added!');
+  toast('Stock added! 📦');
 }
 
-async function adjustStock(id, delta) {
-  const s = cache.hair_stock.find(x => x.id == id);
-  if (!s) return;
-  await dbUpdate('hair_stock', id, { packs_in_stock: Math.max(0, (s.packs_in_stock || 0) + delta) });
+async function adjustStock(id,delta){
+  const s=cache.hair_stock.find(x=>x.id==id);
+  if(!s) return;
+  const newVal=Math.max(0,(s.packs_in_stock||0)+delta);
+  await dbUpdate('hair_stock',id,{packs_in_stock:newVal});
   refreshStock();
+  toast(delta>0?`+1 pack added`:`-1 pack used`);
 }
 
-async function deleteStock(id) {
-  if (!confirm('Delete this stock item?')) return;
-  await dbDelete('hair_stock', id);
+async function deleteStock(id){
+  if(!confirm('Delete this stock item?')) return;
+  await dbDelete('hair_stock',id);
   refreshStock();
   toast('Deleted');
 }
 
-// =============================================
-// PRODUCTS
-// =============================================
-function refreshProducts() {
-  const prods = cache.products;
-  const monthProds = prods.filter(p => inPeriod(p.date, 'monthly'));
-  const monthTotal = monthProds.reduce((s, p) => s + (p.cost || 0), 0);
-  const allTotal = prods.reduce((s, p) => s + (p.cost || 0), 0);
-  const m = document.getElementById('prod-month-total');
-  const a = document.getElementById('prod-all-total');
-  if (m) m.textContent = yen(monthTotal);
-  if (a) a.textContent = yen(allTotal);
-  const el = document.getElementById('product-list');
-  if (!el) return;
-  if (!prods.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">🛒</div><p>No products logged yet.</p></div>'; return; }
-  const cats = { 'Hair Supplies': '💇', 'Oil Ingredients': '🌿', 'Packaging': '📦', 'Tools & Equipment': '🔧', 'Shipping': '🚚', 'Marketing': '📣', 'Other': '🛍️' };
-  el.innerHTML = prods.map(p => `
+// ── PRODUCTS ──
+function refreshProducts(){
+  const prods=cache.products;
+  const monthTotal=prods.filter(p=>inPeriod(p.date,'monthly')).reduce((s,p)=>s+(p.cost||0),0);
+  const allTotal=prods.reduce((s,p)=>s+(p.cost||0),0);
+  const m=document.getElementById('prod-month-total');
+  const a=document.getElementById('prod-all-total');
+  if(m) m.textContent=yen(monthTotal);
+  if(a) a.textContent=yen(allTotal);
+  const el=document.getElementById('product-list');
+  if(!el) return;
+  if(!prods.length){ el.innerHTML='<div class="empty"><div class="empty-ico">🛒</div><p>No products logged yet.<br/>Tap + Add to track purchases!</p></div>'; return; }
+  const cats={'Hair Supplies':'💇','Oil Ingredients':'🌿','Packaging':'📦','Tools & Equipment':'🔧','Shipping':'🚚','Marketing':'📣','Other':'🛍️'};
+  el.innerHTML=prods.map(p=>`
     <div class="prod-card">
-      <div class="prod-ico">${cats[p.category] || '🛍️'}</div>
-      <div style="flex:1">
+      <div class="prod-ico">${cats[p.category]||'🛍️'}</div>
+      <div style="flex:1;min-width:0">
         <div class="prod-name">${p.name}</div>
-        <div class="prod-meta">${p.category || ''} · ${fmtDate(p.date)}${p.supplier ? ' · ' + p.supplier : ''}</div>
+        <div class="prod-meta">${[p.category,fmtDate(p.date),p.supplier].filter(Boolean).join(' · ')}</div>
       </div>
       <div class="prod-cost">${yen(p.cost)}</div>
       <button class="btn-del" style="padding:4px 8px;font-size:.7rem;margin-left:6px" onclick="deleteProd(${p.id})">✕</button>
@@ -1473,175 +1593,235 @@ function refreshProducts() {
   `).join('');
 }
 
-async function saveProduct() {
-  const name = document.getElementById('pm-name').value.trim();
-  const cost = parseFloat(document.getElementById('pm-cost').value);
-  const date = document.getElementById('pm-date').value;
-  if (!name || !cost || !date) { toast('Please fill name, cost and date'); return; }
-  await dbInsert('products', {
+async function saveProduct(){
+  const name=document.getElementById('pm-name').value.trim();
+  const cost=parseFloat(document.getElementById('pm-cost').value);
+  const date=document.getElementById('pm-date').value;
+  if(!name||!cost||!date){ toast('Please fill name, cost and date'); return; }
+  await dbInsert('products',{
     name, cost, date,
-    category: document.getElementById('pm-cat').value,
-    quantity: parseFloat(document.getElementById('pm-qty').value) || 1,
-    supplier: document.getElementById('pm-supplier').value.trim(),
-    notes: document.getElementById('pm-notes').value.trim(),
+    category:document.getElementById('pm-cat').value,
+    quantity:parseFloat(document.getElementById('pm-qty').value)||1,
+    supplier:document.getElementById('pm-supplier').value.trim(),
+    notes:document.getElementById('pm-notes').value.trim(),
   });
-  // Also add as expense transaction
-  await dbInsert('transactions', {
-    type: 'expense', amount: cost, date, description: name,
-    category: document.getElementById('pm-cat').value,
-    notes: document.getElementById('pm-supplier').value.trim(),
+  // Auto-log as expense transaction
+  await dbInsert('transactions',{
+    type:'expense', amount:cost, date, description:name,
+    category:document.getElementById('pm-cat').value,
+    notes:document.getElementById('pm-supplier').value.trim(),
   });
   closeModal('productModal');
-  ['pm-name','pm-cost','pm-qty','pm-supplier','pm-notes'].forEach(id => document.getElementById(id).value = '');
+  ['pm-name','pm-cost','pm-qty','pm-supplier','pm-notes'].forEach(id=>document.getElementById(id).value='');
   refreshProducts();
   refreshDash();
-  toast('Product saved + logged as expense!');
+  toast('Product saved + logged as expense! 🛒');
 }
 
-async function deleteProd(id) {
-  if (!confirm('Delete?')) return;
-  await dbDelete('products', id);
+async function deleteProd(id){
+  if(!confirm('Delete this product?')) return;
+  await dbDelete('products',id);
   refreshProducts();
   toast('Deleted');
 }
 
-// =============================================
-// SAVINGS GOALS
-// =============================================
-function refreshGoals() {
-  const goals = cache.savings_goals;
-  const el = document.getElementById('goals-list');
-  if (!goals.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">🎯</div><p>No savings goals yet.<br/>Add one to start saving!</p></div>'; return; }
-  el.innerHTML = goals.map(g => {
-    const pct = Math.min(100, Math.round((g.saved_amount || 0) / g.target_amount * 100));
+// ── SAVINGS GOALS ──
+function refreshGoals(){
+  const goals=cache.savings_goals;
+  const el=document.getElementById('goals-list');
+  if(!goals.length){ el.innerHTML='<div class="empty"><div class="empty-ico">🎯</div><p>No savings goals yet.<br/>Tap + Add Goal to start saving!</p></div>'; return; }
+  el.innerHTML=goals.map(g=>{
+    const pct=Math.min(100,Math.round((g.saved_amount||0)/g.target_amount*100));
+    const remaining=Math.max(0,g.target_amount-(g.saved_amount||0));
     return `<div class="goal-card">
       <div class="goal-top">
-        <div class="goal-emoji">${g.emoji || '🎯'}</div>
-        <div>
+        <div class="goal-emoji">${g.emoji||'🎯'}</div>
+        <div style="flex:1">
           <div class="goal-name">${g.name}</div>
-          <div class="goal-target">Target: ${yen(g.target_amount)}${g.deadline ? ' · By ' + fmtDate(g.deadline) : ''}</div>
+          <div class="goal-target">Target: ${yen(g.target_amount)}${g.deadline?' · By '+fmtDate(g.deadline):''}</div>
         </div>
-        <button class="btn-del" style="margin-left:auto;padding:4px 8px;font-size:.7rem" onclick="deleteGoal(${g.id})">✕</button>
+        <button class="btn-del" style="padding:4px 8px;font-size:.7rem" onclick="deleteGoal(${g.id})">✕</button>
       </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${g.completed?'var(--green)':'var(--gold)'}"></div></div>
+      <div class="prog-bar" style="height:8px"><div class="prog-fill" style="width:${pct}%;background:${g.completed?'var(--green)':'var(--gold)'}"></div></div>
       <div class="goal-amounts">
-        <span>${yen(g.saved_amount || 0)} saved</span>
-        <span>${pct}%</span>
-        <span>${yen(g.target_amount - (g.saved_amount||0))} left</span>
+        <span>${yen(g.saved_amount||0)} saved</span>
+        <span style="font-weight:600">${pct}%</span>
+        <span>${yen(remaining)} left</span>
       </div>
-      ${!g.completed ? `<button class="goal-add-btn" onclick="openAddToGoal(${g.id},'${g.name}')">+ Add Savings</button>` : '<div style="color:var(--green);font-size:.8rem;font-weight:600;margin-top:6px">✓ Goal Reached!</div>'}
+      ${!g.completed
+        ?`<button class="goal-add-btn" onclick="openAddToGoal(${g.id},'${g.name.replace(/'/g,"\\'")}')">+ Add Savings</button>`
+        :'<div style="color:var(--green);font-size:.82rem;font-weight:600;margin-top:8px;text-align:center">🎉 Goal Reached! Congratulations!</div>'
+      }
     </div>`;
   }).join('');
 }
 
-async function saveGoal() {
-  const name = document.getElementById('gm-name').value.trim();
-  const target = parseFloat(document.getElementById('gm-target').value);
-  if (!name || !target) { toast('Please fill name and target amount'); return; }
-  await dbInsert('savings_goals', {
-    name, target_amount: target, saved_amount: 0,
-    emoji: document.getElementById('gm-emoji').value || '🎯',
-    deadline: document.getElementById('gm-deadline').value || null,
-    completed: false,
+async function saveGoal(){
+  const name=document.getElementById('gm-name').value.trim();
+  const target=parseFloat(document.getElementById('gm-target').value);
+  if(!name||!target){ toast('Please fill name and target amount'); return; }
+  await dbInsert('savings_goals',{
+    name, target_amount:target, saved_amount:0,
+    emoji:document.getElementById('gm-emoji').value||'🎯',
+    deadline:document.getElementById('gm-deadline').value||null,
+    completed:false,
   });
   closeModal('goalModal');
-  document.getElementById('gm-name').value = '';
-  document.getElementById('gm-target').value = '';
-  document.getElementById('gm-emoji').value = '';
-  document.getElementById('gm-deadline').value = '';
+  ['gm-name','gm-target','gm-emoji','gm-deadline'].forEach(id=>document.getElementById(id).value='');
   refreshGoals();
-  toast('Goal created!');
+  toast('Goal created! 🎯');
 }
 
-function openAddToGoal(id, name) {
-  document.getElementById('ga-id').value = id;
-  document.getElementById('goalAddTitle').textContent = 'Add to: ' + name;
+function openAddToGoal(id,name){
+  document.getElementById('ga-id').value=id;
+  document.getElementById('goalAddTitle').textContent='Add to: '+name;
+  document.getElementById('ga-amount').value='';
   openModal('goalAddModal');
 }
 
-async function addToGoal() {
-  const id = document.getElementById('ga-id').value;
-  const amount = parseFloat(document.getElementById('ga-amount').value);
-  if (!amount) { toast('Enter an amount'); return; }
-  const g = cache.savings_goals.find(x => x.id == id);
-  if (!g) return;
-  const newSaved = (g.saved_amount || 0) + amount;
-  const completed = newSaved >= g.target_amount;
-  await dbUpdate('savings_goals', id, { saved_amount: newSaved, completed });
+async function addToGoal(){
+  const id=document.getElementById('ga-id').value;
+  const amount=parseFloat(document.getElementById('ga-amount').value);
+  if(!amount||amount<=0){ toast('Enter a valid amount'); return; }
+  const g=cache.savings_goals.find(x=>x.id==id);
+  if(!g) return;
+  const newSaved=(g.saved_amount||0)+amount;
+  const completed=newSaved>=g.target_amount;
+  await dbUpdate('savings_goals',id,{saved_amount:newSaved,completed});
   closeModal('goalAddModal');
-  document.getElementById('ga-amount').value = '';
   refreshGoals();
-  toast(completed ? '🎉 Goal reached!' : `${yen(amount)} added to goal!`);
+  toast(completed?'🎉 Goal reached! Well done Mercy!':''+yen(amount)+' added to savings!');
 }
 
-async function deleteGoal(id) {
-  if (!confirm('Delete this goal?')) return;
-  await dbDelete('savings_goals', id);
+async function deleteGoal(id){
+  if(!confirm('Delete this savings goal?')) return;
+  await dbDelete('savings_goals',id);
   refreshGoals();
   toast('Deleted');
 }
 
-// =============================================
-// REPORTS
-// =============================================
-function refreshReports() {
-  const txs = cache.transactions;
-  const prods = cache.products;
-  const months = {};
-  [...txs, ...prods.map(p => ({ ...p, type: 'expense', amount: p.cost, description: p.name }))].forEach(t => {
-    const m = (t.date || '').substring(0, 7);
-    if (!m) return;
-    if (!months[m]) months[m] = { income: 0, expense: 0, hairCost: 0, tax: 0, txCount: 0 };
-    if (t.type === 'income') { months[m].income += (t.amount || 0); months[m].hairCost += (t.hair_cost || 0); months[m].txCount++; }
-    else { months[m].expense += (t.amount || 0); }
+// ── RECEIPT GENERATOR ──
+let currentReceiptTx=null;
+
+function generateReceipt(){
+  const t=cache.transactions.find(x=>x.id==currentTxId);
+  if(!t||t.type!=='income'){ toast('Receipts are only for income transactions'); return; }
+  currentReceiptTx=t;
+  closeModal('txModal');
+  const num='#'+String(cache.transactions.filter(x=>x.type==='income').indexOf(t)+1).padStart(3,'0');
+  document.getElementById('r-number').textContent=num;
+  document.getElementById('r-service').textContent=t.description;
+  document.getElementById('r-client').textContent=t.client_name?'For: '+t.client_name+'  ·  '+fmtDateFull(t.date):fmtDateFull(t.date);
+  let lines=`<div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:rgba(255,255,255,.55)">${t.description}</span><span style="color:white;font-weight:600">${yen(t.amount)}</span></div>`;
+  if(t.hair_cost>0) lines+=`<div style="display:flex;justify-content:space-between;font-size:.75rem;"><span style="color:rgba(255,255,255,.4)">Hair extensions (${t.hair_packs} pack${t.hair_packs>1?'s':''})</span><span style="color:rgba(255,255,255,.4)">included</span></div>`;
+  if(t.category) lines+=`<div style="display:flex;justify-content:space-between;font-size:.75rem;"><span style="color:rgba(255,255,255,.4)">Service</span><span style="color:rgba(255,255,255,.4)">${t.category}</span></div>`;
+  lines+=`<div style="display:flex;justify-content:space-between;font-size:.75rem;"><span style="color:rgba(255,255,255,.4)">Payment</span><span style="color:rgba(255,255,255,.4)">Cash 💴</span></div>`;
+  document.getElementById('r-lines').innerHTML=lines;
+  document.getElementById('r-total').textContent=yen(t.amount);
+  openModal('receiptModal');
+}
+
+function getReceiptText(){
+  const t=currentReceiptTx;
+  if(!t) return '';
+  const num='#'+String(cache.transactions.filter(x=>x.type==='income').indexOf(t)+1).padStart(3,'0');
+  return `✦ MERIGO TRESSES — RECEIPT ${num}
+━━━━━━━━━━━━━━━━━━━━━━━
+${t.description}
+${t.client_name?'Client: '+t.client_name:''}
+Date: ${fmtDateFull(t.date)}
+${t.hair_cost>0?'Hair ('+t.hair_packs+' pack'+(t.hair_packs>1?'s':'')+') included':''}
+Payment: Cash 💴
+━━━━━━━━━━━━━━━━━━━━━━━
+TOTAL PAID: ${yen(t.amount)}
+━━━━━━━━━━━━━━━━━━━━━━━
+Thank you for choosing Merigo Tresses! 💛
+Beauty begins with care, ends in style ✦
+
+📍 Fukuoka, Japan
+📸 @merigo_tresses
+💬 WhatsApp: +49 170 612 8008
+💚 LINE: +81 90 7101 9857`;
+}
+
+function shareReceipt(method){
+  const text=getReceiptText();
+  if(method==='whatsapp') window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+  else if(method==='line') window.open('https://line.me/R/share?text='+encodeURIComponent(text),'_blank');
+  else if(method==='copy') navigator.clipboard.writeText(text).then(()=>toast('Copied! Paste into WhatsApp, LINE or email 📋'));
+  else if(method==='native'){
+    if(navigator.share) navigator.share({title:'Merigo Tresses Receipt',text}).catch(()=>{});
+    else navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard!'));
+  }
+}
+
+// ── REPORTS ──
+function refreshReports(){
+  const txs=cache.transactions;
+  const prods=cache.products;
+  const months={};
+  txs.forEach(t=>{
+    const m=(t.date||'').substring(0,7);
+    if(!m) return;
+    if(!months[m]) months[m]={income:0,expense:0,hairCost:0,txCount:0};
+    if(t.type==='income'){ months[m].income+=(t.amount||0); months[m].hairCost+=(t.hair_cost||0); months[m].txCount++; }
+    else months[m].expense+=(t.amount||0);
   });
-  const el = document.getElementById('reports-list');
-  const sorted = Object.keys(months).sort().reverse();
-  if (!sorted.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">📊</div><p>No data yet.</p></div>'; return; }
-  el.innerHTML = sorted.map(m => {
-    const d = months[m];
-    const profit = d.income - d.expense - d.hairCost;
-    const tax = Math.max(0, profit * TAX_RATE);
-    const mn = new Date(m + '-01').toLocaleDateString('en', { month: 'long', year: 'numeric' });
+  // Add products as additional expense detail (avoid double counting with transactions)
+  const el=document.getElementById('reports-list');
+  const sorted=Object.keys(months).sort().reverse();
+  if(!sorted.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📊</div><p>No data yet. Add some transactions!</p></div>'; return; }
+  el.innerHTML=sorted.map(m=>{
+    const d=months[m];
+    const profit=d.income-d.expense-d.hairCost;
+    const tax=Math.max(0,profit*TAX_RATE);
+    const mn=new Date(m+'-01').toLocaleDateString('en',{month:'long',year:'numeric'});
+    const status=profit>200000/12?'✅ On track':'⚠️ Below target';
     return `<div class="report-card">
-      <div class="report-month">📅 ${mn}</div>
-      <div class="report-row"><span class="report-key">Total Income</span><span class="report-val" style="color:var(--green)">${yen(d.income)}</span></div>
-      <div class="report-row"><span class="report-key">Hair Costs</span><span class="report-val" style="color:var(--red)">-${yen(d.hairCost)}</span></div>
-      <div class="report-row"><span class="report-key">Other Expenses</span><span class="report-val" style="color:var(--red)">-${yen(d.expense)}</span></div>
-      <div class="report-row"><span class="report-key">Net Profit</span><span class="report-val" style="color:var(--gold)">${yen(profit)}</span></div>
+      <div class="report-month">📅 ${mn} <span style="font-size:.72rem;color:var(--muted);font-family:'DM Sans',sans-serif">${status}</span></div>
+      <div class="report-row"><span class="report-key">Gross Income</span><span class="report-val" style="color:var(--green)">${yen(d.income)}</span></div>
+      <div class="report-row"><span class="report-key">Hair Extension Costs</span><span class="report-val" style="color:var(--red)">−${yen(d.hairCost)}</span></div>
+      <div class="report-row"><span class="report-key">Other Expenses</span><span class="report-val" style="color:var(--red)">−${yen(d.expense)}</span></div>
+      <div class="report-row" style="border-top:2px solid var(--border);padding-top:8px"><span class="report-key" style="font-weight:600">Net Profit</span><span class="report-val" style="color:var(--gold);font-size:1rem">${yen(profit)}</span></div>
       <div class="report-row"><span class="report-key">Tax Reserve (12%)</span><span class="report-val" style="color:var(--blue)">${yen(tax)}</span></div>
-      <div class="report-row"><span class="report-key">Services Done</span><span class="report-val">${d.txCount}</span></div>
+      <div class="report-row"><span class="report-key">Services Completed</span><span class="report-val">${d.txCount}</span></div>
     </div>`;
   }).join('');
 }
 
-function exportCSV() {
-  const txs = cache.transactions;
-  if (!txs.length) { toast('No data to export'); return; }
-  const header = 'Date,Type,Amount,Hair Cost,Net,Description,Category,Client,Notes\n';
-  const rows = txs.map(t => `${t.date},${t.type},${t.amount},${t.hair_cost||0},${(t.amount||0)-(t.hair_cost||0)},"${t.description}","${t.category||''}","${t.client_name||''}","${t.notes||''}"`).join('\n');
-  const blob = new Blob([header + rows], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `merigo-tresses-${today()}.csv`;
-  a.click();
-  toast('CSV exported!');
+function exportCSV(){
+  const txs=cache.transactions;
+  const prods=cache.products;
+  if(!txs.length&&!prods.length){ toast('No data to export'); return; }
+  let header='Date,Type,Amount (¥),Hair Cost (¥),Net (¥),Description,Category,Client,Notes\n';
+  const txRows=txs.map(t=>`${t.date},${t.type},${t.amount||0},${t.hair_cost||0},${(t.amount||0)-(t.hair_cost||0)},"${t.description}","${t.category||''}","${t.client_name||''}","${t.notes||''}"`);
+  const prodRows=prods.map(p=>`${p.date},product_purchase,${p.cost||0},0,${p.cost||0},"${p.name}","${p.category||''}","","${p.supplier||''}"`);
+  const blob=new Blob([header+[...txRows,...prodRows].join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`merigo-tresses-${today()}.csv`; a.click();
+  toast('CSV exported with all data! 📥');
 }
 
-// =============================================
-// MODALS
-// =============================================
-function openModal(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); }));
+// ── MODALS ──
+function openModal(id){ document.getElementById(id).classList.add('show'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); document.body.style.overflow=''; }
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) closeModal(m.id); }));
+});
 
-// =============================================
-// TOAST
-// =============================================
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+// ── TOAST ──
+function updateAnnualGoal(val){
+  const n=parseInt(val)||960000;
+  ANNUAL_GOAL=n;
+  localStorage.setItem('mt_goal',n);
+  toast('Annual goal updated to '+yen(n)+'!');
+  refreshDash();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 </script>
 </body>
