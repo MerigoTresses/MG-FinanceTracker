@@ -99,17 +99,17 @@ img{display:block;max-width:100%;}
 .ptab.active{background:var(--dark);color:var(--gold);}
 
 /* ── CARDS ── */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:13px 12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px;min-width:0;}
 .card.span2{grid-column:span 2;}
-.clabel{font-size:.72rem;color:var(--muted);font-weight:500;margin-bottom:3px;}
-.cval{font-size:1.35rem;font-weight:700;font-family:'Playfair Display',serif;line-height:1.1;}
+.clabel{font-size:.65rem;color:var(--muted);font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cval{font-size:1.15rem;font-weight:700;font-family:'Playfair Display',serif;line-height:1.15;word-break:break-word;}
 .cval.g{color:var(--green);}
 .cval.r{color:var(--red);}
 .cval.o{color:var(--gold);}
 .cval.b{color:var(--blue);}
-.csub{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.csub{font-size:.62rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── SECTION TITLE ── */
 .stitle{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;}
@@ -1742,97 +1742,159 @@ function generateReceipt(){
 async function downloadReceiptPDF(){
   const t=currentReceiptTx;
   if(!t){ toast('No receipt to download'); return; }
-  if(!window.jspdf){ toast('PDF library loading, please wait...'); return; }
+  if(!window.jspdf){ toast('PDF library loading, try again in a moment...'); return; }
   toast('Generating PDF...');
   const { jsPDF }=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
   const W=doc.internal.pageSize.getWidth();
   const H=doc.internal.pageSize.getHeight();
-  const gold=[201,132,26], dark=[13,6,8], white=[255,255,255], muted=[140,110,65], light=[200,180,140];
 
-  // Background
-  doc.setFillColor(...dark); doc.rect(0,0,W,H,'F');
-  // Top gold bar
-  doc.setFillColor(...gold); doc.rect(0,0,W,3,'F');
+  // ── COLOUR PALETTE (bright & readable) ──
+  const white   = [255, 255, 255];
+  const offwhite= [250, 248, 245];
+  const gold    = [180, 110, 15];
+  const goldl   = [201, 132, 26];
+  const dark    = [20,  14,  8];
+  const gray    = [100, 90,  80];
+  const lgray   = [160, 148, 130];
+  const rowbg   = [245, 241, 234];
+  const altbg   = [238, 232, 220];
+  const green   = [30,  107, 69];
 
-  // Logo
+  // ── WHITE BACKGROUND ──
+  doc.setFillColor(...white);
+  doc.rect(0,0,W,H,'F');
+
+  // ── GOLD HEADER BAND ──
+  doc.setFillColor(...goldl);
+  doc.rect(0,0,W,36,'F');
+
+  // ── SUBTLE PATTERN ON HEADER ──
+  doc.setFillColor(180,110,15);
+  for(let i=0;i<W;i+=8){
+    doc.rect(i,0,4,36,'F');
+  }
+  doc.setFillColor(...goldl);
+  doc.rect(0,0,W,36,'F'); // re-paint over pattern for clean look
+
+  // ── LOGO in header ──
   try {
     const imgData=await getImageAsBase64('logo.png');
-    doc.addImage(imgData,'PNG',10,9,22,22,'','FAST');
+    doc.addImage(imgData,'PNG',9,5,26,26,'','FAST');
   } catch(e) {
-    doc.setFillColor(...gold); doc.circle(21,20,10,'F');
-    doc.setTextColor(...dark); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text('MT',18,22);
+    doc.setFillColor(...white); doc.circle(22,18,10,'F');
+    doc.setTextColor(...goldl); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text('MT',19,20);
   }
 
-  // Business name
-  doc.setTextColor(...gold); doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text('MERIGO TRESSES',36,16);
-  doc.setTextColor(...muted); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text('Fukuoka, Japan  \u00B7  Hair Braiding Studio',36,22);
+  // ── BUSINESS NAME in header ──
+  doc.setTextColor(...white);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('MERIGO TRESSES', 40, 16);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+  doc.setTextColor(255,240,210);
+  doc.text('Fukuoka, Japan  \u00B7  Hair Braiding Studio', 40, 23);
 
-  // Receipt number top-right
+  // Receipt badge top right
+  doc.setFillColor(...dark);
+  doc.roundedRect(W-36,5,30,12,2,2,'F');
+  doc.setTextColor(...white);
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold');
   const num='#'+String(cache.transactions.filter(x=>x.type==='income').indexOf(t)+1).padStart(3,'0');
-  doc.setTextColor(...muted); doc.setFontSize(7); doc.text('RECEIPT '+num,W-10,14,{align:'right'});
-  doc.setTextColor(...light); doc.setFontSize(8); doc.text(fmtDateFull(t.date),W-10,21,{align:'right'});
+  doc.text('RECEIPT '+num, W-21, 11, {align:'center'});
+  doc.setFontSize(6); doc.setFont('helvetica','normal');
+  doc.text(fmtDateFull(t.date), W-21, 16.5, {align:'center'});
 
-  // Divider
-  doc.setDrawColor(...gold); doc.setLineWidth(0.4); doc.line(10,34,W-10,34);
+  // ── SERVICE TITLE ──
+  let y = 46;
+  doc.setTextColor(...dark);
+  doc.setFontSize(17); doc.setFont('helvetica','bold');
+  doc.text(t.description, 12, y);
 
-  // Service
-  doc.setTextColor(...white); doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text(t.description,10,45);
-
-  let y=50;
+  // ── CLIENT ROW ──
   if(t.client_name){
-    doc.setTextColor(...muted); doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text('Client: '+t.client_name,10,y); y+=8;
+    y += 8;
+    doc.setFillColor(...rowbg);
+    doc.roundedRect(10,y-4,W-20,9,2,2,'F');
+    doc.setTextColor(...gray); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Client:', 14, y+1.5);
+    doc.setTextColor(...dark); doc.setFont('helvetica','bold');
+    doc.text(t.client_name, 30, y+1.5);
+    y += 9;
   }
 
-  // Items box
-  const boxH=t.hair_cost>0?38:28;
-  doc.setFillColor(22,12,14); doc.roundedRect(10,y,W-20,boxH,3,3,'F');
+  y += 4;
 
-  const row=(label,val,yy,lc,vc)=>{
-    doc.setTextColor(...lc); doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.text(label,15,yy);
-    doc.setTextColor(...vc); doc.text(val,W-15,yy,{align:'right'});
-  };
+  // ── ITEMS TABLE ──
+  const tableRows = [];
+  tableRows.push({ label: t.description, val: yen(t.amount), bold: true });
+  if(t.hair_cost>0) tableRows.push({ label:'Hair extensions ('+t.hair_packs+' pack'+(t.hair_packs>1?'s':'')+')', val:'Included', bold:false });
+  if(t.category)    tableRows.push({ label:'Service type', val:t.category, bold:false });
+  tableRows.push({ label:'Payment method', val:'Cash', bold:false });
 
-  row(t.description, yen(t.amount), y+7, light, white);
-  if(t.hair_cost>0){ row('Hair extensions ('+t.hair_packs+' pack'+(t.hair_packs>1?'s':'')+')', 'included', y+15, muted, muted); }
-  if(t.category){ const yy=t.hair_cost>0?y+23:y+15; row('Service type',t.category,yy,muted,muted); }
-  const payY=t.hair_cost>0?(t.category?y+31:y+23):(t.category?y+23:y+15);
-  doc.setDrawColor(40,25,20); doc.setLineWidth(0.15); doc.setLineDash([1,1],0);
-  doc.line(14,payY-3,W-14,payY-3); doc.setLineDash([],0);
-  row('Payment method','Cash',payY+1,muted,muted);
+  // Table header
+  doc.setFillColor(...dark);
+  doc.roundedRect(10,y,W-20,8,2,2,'F');
+  doc.setTextColor(...white); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text('DESCRIPTION', 15, y+5);
+  doc.text('AMOUNT', W-15, y+5, {align:'right'});
+  y += 8;
 
-  // Total box
-  y+=boxH+8;
-  doc.setFillColor(...gold); doc.roundedRect(10,y,W-20,22,3,3,'F');
-  doc.setTextColor(...dark); doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text('TOTAL PAID',17,y+9);
-  doc.setFontSize(19); doc.text(yen(t.amount),W-14,y+15,{align:'right'});
+  // Table rows alternating
+  tableRows.forEach((r,i)=>{
+    doc.setFillColor(...(i%2===0?rowbg:altbg));
+    doc.rect(10,y,W-20,9,'F');
+    doc.setTextColor(...gray); doc.setFontSize(8);
+    doc.setFont('helvetica', r.bold?'bold':'normal');
+    doc.setTextColor(r.bold?dark:gray);
+    doc.text(r.label, 15, y+6);
+    doc.setTextColor(r.bold?green:lgray);
+    doc.setFont('helvetica', r.bold?'bold':'normal');
+    doc.text(r.val, W-15, y+6, {align:'right'});
+    y+=9;
+  });
 
-  // Thank you
-  y+=32;
-  doc.setTextColor(...gold); doc.setFontSize(11); doc.setFont('helvetica','bold');
-  doc.text('Thank you for choosing Merigo Tresses!',W/2,y,{align:'center'});
-  doc.setTextColor(...muted); doc.setFontSize(7.5); doc.setFont('helvetica','italic');
-  doc.text('Beauty begins with care, ends in style \u2756',W/2,y+7,{align:'center'});
+  // Table bottom border
+  doc.setDrawColor(...goldl); doc.setLineWidth(0.5); doc.line(10,y,W-20+10,y);
 
-  // Footer
-  y+=18;
-  doc.setDrawColor(40,28,20); doc.setLineWidth(0.2); doc.line(10,y,W-10,y);
-  y+=6;
-  doc.setTextColor(90,65,30); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-  doc.text('@merigo_tresses',10,y);
-  doc.text('WhatsApp: +49 170 612 8008',W/2,y,{align:'center'});
-  doc.text('LINE: +81 90 7101 9857',W-10,y,{align:'right'});
+  // ── TOTAL BOX ──
+  y += 6;
+  doc.setFillColor(...dark);
+  doc.roundedRect(10,y,W-20,20,3,3,'F');
+  // Gold accent left strip
+  doc.setFillColor(...goldl);
+  doc.roundedRect(10,y,4,20,2,2,'F');
+  doc.setTextColor(...lgray); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('TOTAL PAID', 20, y+9);
+  doc.setTextColor(...white); doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text(yen(t.amount), W-15, y+15, {align:'right'});
 
-  // Bottom gold bar
-  doc.setFillColor(...gold); doc.rect(0,H-3,W,3,'F');
+  // ── THANK YOU ──
+  y += 28;
+  doc.setFillColor(250,245,235);
+  doc.roundedRect(10,y,W-20,18,3,3,'F');
+  doc.setDrawColor(...goldl); doc.setLineWidth(0.4);
+  doc.roundedRect(10,y,W-20,18,3,3,'S');
+  doc.setTextColor(...goldl); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('Thank you for choosing Merigo Tresses!', W/2, y+8, {align:'center'});
+  doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','italic');
+  doc.text('Beauty begins with care, ends in style \u2756', W/2, y+14, {align:'center'});
+
+  // ── FOOTER ──
+  y += 24;
+  doc.setDrawColor(220,210,195); doc.setLineWidth(0.3); doc.line(10,y,W-10,y);
+  y += 6;
+  doc.setTextColor(...lgray); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('@merigo_tresses', 12, y);
+  doc.text('WA: +49 170 612 8008', W/2, y, {align:'center'});
+  doc.text('LINE: +81 90 7101 9857', W-12, y, {align:'right'});
+
+  // ── BOTTOM GOLD BAR ──
+  doc.setFillColor(...goldl);
+  doc.rect(0, H-4, W, 4, 'F');
 
   const filename='MerigoTresses-Receipt-'+num.replace('#','')+(t.client_name?'-'+t.client_name.replace(/\s+/g,'-'):'')+'.pdf';
   doc.save(filename);
-  toast('PDF downloaded! Share it with your client 📄');
+  toast('PDF downloaded! \uD83D\uDCC4 Clean & professional!');
 }
 
 function getImageAsBase64(src){
