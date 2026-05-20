@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#C9841A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="MT Finance"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Merigo Tresses — Finance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --gold: #C9841A;
+  --gold-light: #F0A830;
+  --gold-pale: #FDF3E3;
+  --dark: #12090A;
+  --dark2: #1E0F02;
+  --cream: #FBF5EC;
+  --white: #FFFFFF;
+  --text: #1E0F02;
+  --muted: #7A5C35;
+  --border: rgba(201,132,26,0.2);
+  --green: #2D6A4F;
+  --green-light: #f0faf4;
+  --red: #7B1818;
+  --red-light: #fdf0f0;
+  --blue: #1a4a7b;
+  --blue-light: #f0f4fa;
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(12,5,0,0.10);
+  --shadow-lg: 0 12px 48px rgba(12,5,0,0.16);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;padding-bottom:80px;}
+h1,h2,h3{font-family:'Playfair Display',serif;}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;z-index:100;padding:0 0 env(safe-area-inset-bottom);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;border:none;background:none;color:rgba(255,255,255,0.45);cursor:pointer;gap:4px;font-size:10px;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.nav-btn.active{color:var(--gold);}
+.nav-btn svg{width:22px;height:22px;}
+
+/* HEADER */
+.app-header{background:var(--dark);color:white;padding:20px 20px 24px;position:relative;overflow:hidden;}
+.app-header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(201,132,26,0.25),transparent 70%);border-radius:50%;}
+.app-header h1{font-size:1.5rem;font-weight:900;color:var(--gold);}
+.app-header p{font-size:0.82rem;color:rgba(255,255,255,0.55);margin-top:2px;}
+.header-month{font-size:0.8rem;background:rgba(201,132,26,0.15);color:var(--gold-light);padding:3px 10px;border-radius:50px;display:inline-block;margin-top:8px;}
+
+/* PAGES */
+.page{display:none;padding:16px;}
+.page.active{display:block;}
+
+/* SUMMARY CARDS */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.summary-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.summary-card.full{grid-column:span 2;}
+.summary-card .label{font-size:0.75rem;color:var(--muted);font-weight:500;margin-bottom:4px;}
+.summary-card .amount{font-size:1.4rem;font-weight:700;font-family:'Playfair Display',serif;}
+.summary-card .amount.green{color:var(--green);}
+.summary-card .amount.red{color:var(--red);}
+.summary-card .amount.gold{color:var(--gold);}
+.summary-card .amount.blue{color:var(--blue);}
+.summary-card .sub{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+/* TAX BANNER */
+.tax-banner{background:linear-gradient(135deg,var(--dark),var(--dark2));border-radius:var(--radius);padding:16px;margin-bottom:16px;color:white;display:flex;align-items:center;gap:12px;}
+.tax-banner .tax-icon{font-size:1.8rem;flex-shrink:0;}
+.tax-banner .tax-label{font-size:0.75rem;opacity:0.65;margin-bottom:2px;}
+.tax-banner .tax-amount{font-size:1.3rem;font-weight:700;color:var(--gold-light);font-family:'Playfair Display',serif;}
+.tax-banner .tax-sub{font-size:0.7rem;opacity:0.5;margin-top:2px;}
+
+/* SECTION HEADERS */
+.section-title{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px;}
+
+/* TRANSACTION LIST */
+.tx-list{display:flex;flex-direction:column;gap:8px;}
+.tx-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.tx-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.tx-dot.income{background:var(--green-light);}
+.tx-dot.expense{background:var(--red-light);}
+.tx-info{flex:1;}
+.tx-name{font-size:0.9rem;font-weight:500;}
+.tx-date{font-size:0.72rem;color:var(--muted);margin-top:1px;}
+.tx-tag{font-size:0.65rem;background:var(--gold-pale);color:var(--gold);padding:1px 6px;border-radius:50px;margin-left:4px;}
+.tx-amount{font-size:1rem;font-weight:600;font-family:'Playfair Display',serif;}
+.tx-amount.income{color:var(--green);}
+.tx-amount.expense{color:var(--red);}
+.tx-delete{background:none;border:none;cursor:pointer;color:#ccc;font-size:1rem;padding:4px;margin-left:4px;}
+.tx-delete:hover{color:var(--red);}
+
+/* FORM */
+.add-form{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.add-form h3{font-size:1rem;margin-bottom:14px;color:var(--dark);}
+.form-group{margin-bottom:12px;}
+.form-group label{font-size:0.8rem;font-weight:600;color:var(--text);display:block;margin-bottom:4px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.92rem;background:var(--cream);color:var(--text);outline:none;transition:border-color 0.2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);background:var(--white);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-primary{width:100%;padding:12px;background:var(--gold);color:white;border:none;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-primary:hover{background:var(--gold-light);}
+.type-toggle{display:flex;gap:8px;margin-bottom:14px;}
+.type-btn{flex:1;padding:8px;border-radius:50px;border:2px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.type-btn.income.active{background:var(--green-light);border-color:var(--green);color:var(--green);}
+.type-btn.expense.active{background:var(--red-light);border-color:var(--red);color:var(--red);}
+
+/* PERIOD TABS */
+.period-tabs{display:flex;background:var(--white);border:1px solid var(--border);border-radius:50px;padding:3px;margin-bottom:16px;}
+.period-tab{flex:1;text-align:center;padding:7px;border-radius:50px;font-size:0.82rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--muted);transition:all 0.2s;}
+.period-tab.active{background:var(--dark);color:var(--gold);}
+
+/* CHART */
+.chart-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+.chart-title{font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar-wrap{width:100%;display:flex;gap:2px;align-items:flex-end;height:80px;}
+.bar{flex:1;border-radius:4px 4px 0 0;min-height:2px;transition:height 0.4s ease;}
+.bar.income-bar{background:var(--green);}
+.bar.expense-bar{background:var(--red-light);border:1px solid #e8b4b4;}
+.bar-label{font-size:0.65rem;color:var(--muted);}
+
+/* SETTINGS */
+.settings-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;}
+.settings-card h3{font-size:0.95rem;font-weight:600;margin-bottom:10px;color:var(--dark);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{font-size:0.88rem;color:var(--text);}
+.settings-value{font-size:0.88rem;font-weight:500;color:var(--gold);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .icon{font-size:2.5rem;margin-bottom:10px;}
+.empty-state p{font-size:0.88rem;line-height:1.6;}
+
+/* BADGE */
+.badge{display:inline-block;font-size:0.68rem;padding:2px 8px;border-radius:50px;font-weight:500;}
+.badge-gold{background:var(--gold-pale);color:var(--gold);}
+.badge-green{background:var(--green-light);color:var(--green);}
+
+/* PROGRESS BAR */
+.progress-wrap{margin-top:6px;}
+.progress-bar{height:6px;background:#eee;border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;background:var(--gold);transition:width 0.4s;}
+.progress-label{font-size:0.7rem;color:var(--muted);margin-top:3px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:white;padding:10px 20px;border-radius:50px;font-size:0.85rem;opacity:0;pointer-events:none;transition:all 0.3s;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* GOOGLE SHEETS BUTTON */
+.sheets-btn{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;width:100%;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;color:var(--text);margin-bottom:10px;transition:all 0.2s;}
+.sheets-btn:hover{border-color:var(--gold);}
+.sheets-icon{width:32px;height:32px;background:#0F9D58;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;flex-shrink:0;}
+
+/* RESPONSIVE */
+@media(min-width:480px){
+  .summary-grid{grid-template-columns:repeat(4,1fr);}
+  .summary-card.full{grid-column:span 4;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <h1>Merigo Tresses ✦</h1>
+  <p>Business Finance Tracker</p>
+  <div class="header-month" id="headerMonth"></div>
+</div>
+
+<!-- PAGES -->
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+
+  <div class="period-tabs" style="margin-top:16px;">
+    <button class="period-tab active" onclick="setPeriod('daily',this)">Today</button>
+    <button class="period-tab" onclick="setPeriod('weekly',this)">Week</button>
+    <button class="period-tab" onclick="setPeriod('monthly',this)">Month</button>
+    <button class="period-tab" onclick="setPeriod('yearly',this)">Year</button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">💰 Earnings</div>
+      <div class="amount green" id="dash-income">¥0</div>
+      <div class="sub" id="dash-income-sub"></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">💸 Expenses</div>
+      <div class="amount red" id="dash-expense">¥0</div>
+      <div class="sub" id="dash-expense-sub"></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">📈 Profit</div>
+      <div class="amount gold" id="dash-profit">¥0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">🧾 Tax Reserve</div>
+      <div class="amount blue" id="dash-tax">¥0</div>
+      <div class="sub">Set aside 12%</div>
+    </div>
+  </div>
+
+  <div class="tax-banner">
+    <div class="tax-icon">🏦</div>
+    <div>
+      <div class="tax-label">TOTAL TAX RESERVE (All Time)</div>
+      <div class="tax-amount" id="total-tax-reserve">¥0</div>
+      <div class="tax-sub">Keep this in a separate envelope or savings</div>
+    </div>
+  </div>
+
+  <!-- Annual progress -->
+  <div class="settings-card">
+    <h3>Annual Goal — ¥960,000</h3>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="annual-progress" style="width:0%"></div></div>
+      <div class="progress-label" id="annual-progress-label">¥0 of ¥960,000 (0%)</div>
+    </div>
+  </div>
+
+  <!-- Mini chart -->
+  <div class="chart-wrap">
+    <div class="chart-title">Monthly Overview</div>
+    <div class="bar-chart" id="mini-chart"></div>
+    <div style="display:flex;gap:12px;margin-top:8px;">
+      <span style="font-size:0.7rem;color:var(--green);">■ Income</span>
+      <span style="font-size:0.7rem;color:#e8b4b4;">■ Expenses</span>
+    </div>
+  </div>
+
+  <div class="section-title">Recent Transactions</div>
+  <div class="tx-list" id="recent-list"></div>
+</div>
+
+<!-- ADD TRANSACTION -->
+<div class="page" id="page-add">
+  <div style="padding-top:16px;">
+  <div class="add-form">
+    <h3>Add Transaction</h3>
+    <div class="type-toggle">
+      <button class="type-btn income active" id="type-income" onclick="setType('income')">💰 Income</button>
+      <button class="type-btn expense" id="type-expense" onclick="setType('expense')">💸 Expense</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Amount (¥) *</label>
+        <input type="number" id="tx-amount" placeholder="23000" inputmode="numeric"/>
+      </div>
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="tx-date"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description *</label>
+      <input type="text" id="tx-desc" placeholder="e.g. Knotless Braids — Client Name"/>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="tx-category">
+        <option value="">Select category...</option>
+        <optgroup label="💰 Income">
+          <option value="Braiding Service">Braiding Service</option>
+          <option value="Wig Sale">Wig Sale</option>
+          <option value="Hair Oil Sale">Hair Oil Sale</option>
+          <option value="Other Income">Other Income</option>
+        </optgroup>
+        <optgroup label="💸 Expenses">
+          <option value="Hair Supplies">Hair Supplies</option>
+          <option value="Oil Ingredients">Oil Ingredients</option>
+          <option value="Packaging">Packaging</option>
+          <option value="Tools & Equipment">Tools & Equipment</option>
+          <option value="Shipping">Shipping</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Other Expense">Other Expense</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <input type="text" id="tx-notes" placeholder="Any additional notes..."/>
+    </div>
+    <button class="btn-primary" onclick="addTransaction()">Add Transaction ✦</button>
+  </div>
+
+  <!-- Quick add service buttons -->
+  <div class="section-title">Quick Add — Services</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Knotless Braids',23000)">Knotless ¥23,000</button>
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Box Braids',23000)">Box Braids ¥23,000</button>
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Cornrows',18000)">Cornrows ¥18,000</button>
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Fulani Braids',18000)">Fulani ¥18,000</button>
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Natural Twist Short',8000)">Twist Short ¥8,000</button>
+    <button class="type-btn income" style="padding:10px;border-radius:var(--radius-sm);font-size:0.8rem;" onclick="quickAdd('Natural Twist Long',15000)">Twist Long ¥15,000</button>
+  </div>
+  </div>
+</div>
+
+<!-- LOG / HISTORY -->
+<div class="page" id="page-log">
+  <div style="padding-top:16px;">
+  <div class="period-tabs">
+    <button class="period-tab active" onclick="setLogPeriod('daily',this)">Today</button>
+    <button class="period-tab" onclick="setLogPeriod('weekly',this)">Week</button>
+    <button class="period-tab" onclick="setLogPeriod('monthly',this)">Month</button>
+    <button class="period-tab" onclick="setLogPeriod('all',this)">All</button>
+  </div>
+
+  <div class="summary-grid" style="margin-bottom:12px;">
+    <div class="summary-card">
+      <div class="label">Income</div>
+      <div class="amount green" id="log-income">¥0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Expenses</div>
+      <div class="amount red" id="log-expense">¥0</div>
+    </div>
+  </div>
+
+  <div class="section-title">Transactions</div>
+  <div class="tx-list" id="log-list"></div>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div style="padding-top:16px;">
+
+  <div class="section-title">Monthly Breakdown</div>
+  <div id="monthly-breakdown"></div>
+
+  <div class="section-title">Category Breakdown</div>
+  <div id="category-breakdown"></div>
+
+  <div class="section-title">Tax Report</div>
+  <div class="settings-card">
+    <h3>Tax Summary</h3>
+    <div class="settings-row">
+      <span class="settings-label">Total Income (All Time)</span>
+      <span class="settings-value" id="rep-total-income">¥0</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Total Expenses (All Time)</span>
+      <span class="settings-value" id="rep-total-expense">¥0</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Net Profit</span>
+      <span class="settings-value" id="rep-profit">¥0</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Tax Reserve (12%)</span>
+      <span class="settings-value" id="rep-tax">¥0</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Tax Threshold</span>
+      <span class="settings-value">¥200,000/yr</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Filing Required?</span>
+      <span class="settings-value" id="rep-filing">Checking...</span>
+    </div>
+  </div>
+
+  <div class="section-title">Export Data</div>
+  <button class="sheets-btn" onclick="exportCSV()">
+    <div class="sheets-icon">CSV</div>
+    <div>
+      <div style="font-weight:600;">Export to CSV</div>
+      <div style="font-size:0.75rem;color:var(--muted);">Download and open in Google Sheets</div>
+    </div>
+  </button>
+  <button class="sheets-btn" onclick="copyForSheets()">
+    <div class="sheets-icon" style="background:#0F9D58;">GS</div>
+    <div>
+      <div style="font-weight:600;">Copy for Google Sheets</div>
+      <div style="font-size:0.75rem;color:var(--muted);">Paste directly into your spreadsheet</div>
+    </div>
+  </button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div style="padding-top:16px;">
+  <div class="settings-card">
+    <h3>Business Info</h3>
+    <div class="settings-row">
+      <span class="settings-label">Business Name</span>
+      <span class="settings-value">Merigo Tresses</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Location</span>
+      <span class="settings-value">Fukuoka, Japan</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Tax Rate</span>
+      <span class="settings-value">12% reserve</span>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h3>Monthly Goals</h3>
+    <div class="form-group">
+      <label>Income Goal (¥)</label>
+      <input type="number" id="goal-income" placeholder="80000" onchange="saveGoal()" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;width:100%;font-family:'DM Sans',sans-serif;"/>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Annual Goal</span>
+      <span class="settings-value" id="annual-goal-display">¥960,000</span>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h3>Japan Tax Guide</h3>
+    <div class="settings-row">
+      <span class="settings-label">Filing needed if profit over</span>
+      <span class="settings-value">¥200,000/yr</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Filing deadline</span>
+      <span class="settings-value">Feb–Mar each year</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Recommended reserve</span>
+      <span class="settings-value">12–15% of profit</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Blue form deduction</span>
+      <span class="settings-value">¥650,000</span>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h3>Data Management</h3>
+    <button class="btn-primary" onclick="exportCSV()" style="margin-bottom:8px;">Export All Data (CSV)</button>
+    <button onclick="clearAllData()" style="width:100%;padding:10px;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.9rem;cursor:pointer;">Clear All Data</button>
+  </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('dashboard',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </button>
+  <button class="nav-btn" onclick="showPage('add',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Add
+  </button>
+  <button class="nav-btn" onclick="showPage('log',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Log
+  </button>
+  <button class="nav-btn" onclick="showPage('reports',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Reports
+  </button>
+  <button class="nav-btn" onclick="showPage('settings',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const TAX_RATE = 0.12;
+const ANNUAL_GOAL = 960000;
+
+function getData(){
+  try{return JSON.parse(localStorage.getItem('mt_transactions')||'[]');}catch{return[];}
+}
+function saveData(data){
+  localStorage.setItem('mt_transactions',JSON.stringify(data));
+}
+
+// ===== DATES =====
+function today(){return new Date().toISOString().split('T')[0];}
+function getWeekStart(){
+  const d=new Date();d.setDate(d.getDate()-d.getDay());
+  return d.toISOString().split('T')[0];
+}
+function getMonthStart(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+}
+function getYearStart(){return `${new Date().getFullYear()}-01-01`;}
+
+function inPeriod(dateStr,period){
+  if(period==='daily') return dateStr===today();
+  if(period==='weekly') return dateStr>=getWeekStart();
+  if(period==='monthly') return dateStr>=getMonthStart();
+  if(period==='yearly') return dateStr>=getYearStart();
+  return true;
+}
+
+// ===== FORMATTING =====
+function yen(n){return '¥'+Math.abs(n).toLocaleString();}
+function fmtDate(d){
+  const dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-JP',{month:'short',day:'numeric'});
+}
+
+// ===== STATE =====
+let currentPeriod='monthly';
+let logPeriod='monthly';
+let txType='income';
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+  const now=new Date();
+  document.getElementById('headerMonth').textContent=
+    now.toLocaleDateString('en',{month:'long',year:'numeric'});
+  document.getElementById('tx-date').value=today();
+  loadGoal();
+  refreshDashboard();
+  renderMiniChart();
+});
+
+// ===== NAVIGATION =====
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='dashboard') refreshDashboard();
+  if(name==='log') refreshLog();
+  if(name==='reports') refreshReports();
+}
+
+// ===== PERIOD =====
+function setPeriod(p,btn){
+  currentPeriod=p;
+  document.querySelectorAll('#page-dashboard .period-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshDashboard();
+}
+function setLogPeriod(p,btn){
+  logPeriod=p;
+  document.querySelectorAll('#page-log .period-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshLog();
+}
+
+// ===== TYPE =====
+function setType(t){
+  txType=t;
+  document.getElementById('type-income').classList.toggle('active',t==='income');
+  document.getElementById('type-expense').classList.toggle('active',t==='expense');
+}
+
+// ===== ADD =====
+function addTransaction(){
+  const amount=parseFloat(document.getElementById('tx-amount').value);
+  const date=document.getElementById('tx-date').value;
+  const desc=document.getElementById('tx-desc').value.trim();
+  const category=document.getElementById('tx-category').value;
+  const notes=document.getElementById('tx-notes').value.trim();
+
+  if(!amount||!date||!desc){showToast('Please fill in amount, date and description');return;}
+
+  const data=getData();
+  data.unshift({
+    id:Date.now(),
+    type:txType,
+    amount,
+    date,
+    desc,
+    category,
+    notes,
+    created:new Date().toISOString()
+  });
+  saveData(data);
+
+  // Clear form
+  document.getElementById('tx-amount').value='';
+  document.getElementById('tx-desc').value='';
+  document.getElementById('tx-notes').value='';
+  document.getElementById('tx-date').value=today();
+
+  const msg=txType==='income'?`Income ¥${amount.toLocaleString()} added!`:`Expense ¥${amount.toLocaleString()} added!`;
+  showToast(msg);
+  refreshDashboard();
+  renderMiniChart();
+}
+
+function quickAdd(name,amount){
+  document.getElementById('tx-amount').value=amount;
+  document.getElementById('tx-desc').value=name;
+  document.getElementById('tx-category').value='Braiding Service';
+  setType('income');
+  document.getElementById('tx-date').value=today();
+  showToast(`Ready — tap Add Transaction to confirm`);
+}
+
+// ===== DELETE =====
+function deleteTransaction(id){
+  if(!confirm('Delete this transaction?')) return;
+  const data=getData().filter(t=>t.id!==id);
+  saveData(data);
+  refreshDashboard();
+  refreshLog();
+  refreshReports();
+  renderMiniChart();
+  showToast('Transaction deleted');
+}
+
+// ===== DASHBOARD =====
+function refreshDashboard(){
+  const data=getData();
+  const filtered=data.filter(t=>inPeriod(t.date,currentPeriod));
+  const income=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const profit=income-expense;
+  const tax=Math.max(0,profit*TAX_RATE);
+
+  document.getElementById('dash-income').textContent=yen(income);
+  document.getElementById('dash-expense').textContent=yen(expense);
+  document.getElementById('dash-profit').textContent=(profit>=0?'':'-')+yen(profit);
+  document.getElementById('dash-tax').textContent=yen(tax);
+
+  const periodLabels={daily:'today',weekly:'this week',monthly:'this month',yearly:'this year'};
+  document.getElementById('dash-income-sub').textContent=
+    filtered.filter(t=>t.type==='income').length+' transactions '+periodLabels[currentPeriod];
+
+  // All time tax reserve
+  const allIncome=data.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const allExpense=data.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const allProfit=Math.max(0,allIncome-allExpense);
+  document.getElementById('total-tax-reserve').textContent=yen(allProfit*TAX_RATE);
+
+  // Annual progress
+  const yearIncome=data.filter(t=>t.type==='income'&&inPeriod(t.date,'yearly')).reduce((s,t)=>s+t.amount,0);
+  const pct=Math.min(100,Math.round(yearIncome/ANNUAL_GOAL*100));
+  document.getElementById('annual-progress').style.width=pct+'%';
+  document.getElementById('annual-progress-label').textContent=
+    yen(yearIncome)+' of '+yen(ANNUAL_GOAL)+' ('+pct+'%)';
+
+  // Recent transactions (last 5)
+  renderTxList(data.slice(0,5),'recent-list');
+}
+
+// ===== LOG =====
+function refreshLog(){
+  const data=getData();
+  const filtered=logPeriod==='all'?data:data.filter(t=>inPeriod(t.date,logPeriod));
+  const income=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('log-income').textContent=yen(income);
+  document.getElementById('log-expense').textContent=yen(expense);
+  renderTxList(filtered,'log-list',true);
+}
+
+function renderTxList(data,elId,showDelete=false){
+  const el=document.getElementById(elId);
+  if(!data.length){
+    el.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>No transactions yet.<br/>Tap + Add to get started!</p></div>';
+    return;
+  }
+  el.innerHTML=data.map(t=>`
+    <div class="tx-item">
+      <div class="tx-dot ${t.type}">${t.type==='income'?'💰':'💸'}</div>
+      <div class="tx-info">
+        <div class="tx-name">${t.desc}${t.category?`<span class="tx-tag">${t.category}</span>`:''}</div>
+        <div class="tx-date">${fmtDate(t.date)}${t.notes?' · '+t.notes:''}</div>
+      </div>
+      <div class="tx-amount ${t.type}">${t.type==='income'?'+':'-'}${yen(t.amount)}</div>
+      ${showDelete?`<button class="tx-delete" onclick="deleteTransaction(${t.id})">✕</button>`:''}
+    </div>
+  `).join('');
+}
+
+// ===== REPORTS =====
+function refreshReports(){
+  const data=getData();
+  const allIncome=data.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const allExpense=data.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const profit=allIncome-allExpense;
+  const tax=Math.max(0,profit*TAX_RATE);
+
+  document.getElementById('rep-total-income').textContent=yen(allIncome);
+  document.getElementById('rep-total-expense').textContent=yen(allExpense);
+  document.getElementById('rep-profit').textContent=yen(profit);
+  document.getElementById('rep-tax').textContent=yen(tax);
+  document.getElementById('rep-filing').textContent=
+    profit>200000?'⚠️ Yes — over ¥200,000':'✅ Not yet';
+
+  // Monthly breakdown
+  const months={};
+  data.forEach(t=>{
+    const m=t.date.substring(0,7);
+    if(!months[m]) months[m]={income:0,expense:0};
+    months[m][t.type]+=t.amount;
+  });
+  const monthEl=document.getElementById('monthly-breakdown');
+  const sortedMonths=Object.keys(months).sort().reverse();
+  if(!sortedMonths.length){
+    monthEl.innerHTML='<div class="empty-state"><div class="icon">📊</div><p>No data yet</p></div>';
+  } else {
+    monthEl.innerHTML=sortedMonths.map(m=>{
+      const d=months[m];
+      const p=d.income-d.expense;
+      const mn=new Date(m+'-01').toLocaleDateString('en',{month:'long',year:'numeric'});
+      return`<div class="settings-card" style="margin-bottom:8px;">
+        <h3>${mn}</h3>
+        <div class="settings-row"><span class="settings-label">Income</span><span class="settings-value" style="color:var(--green)">${yen(d.income)}</span></div>
+        <div class="settings-row"><span class="settings-label">Expenses</span><span class="settings-value" style="color:var(--red)">${yen(d.expense)}</span></div>
+        <div class="settings-row"><span class="settings-label">Profit</span><span class="settings-value">${yen(p)}</span></div>
+        <div class="settings-row"><span class="settings-label">Tax Reserve</span><span class="settings-value" style="color:var(--blue)">${yen(Math.max(0,p*TAX_RATE))}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Category breakdown
+  const cats={};
+  data.forEach(t=>{
+    const c=t.category||'Uncategorised';
+    if(!cats[c]) cats[c]={income:0,expense:0,count:0};
+    cats[c][t.type]+=t.amount;
+    cats[c].count++;
+  });
+  const catEl=document.getElementById('category-breakdown');
+  const catKeys=Object.keys(cats);
+  if(!catKeys.length){
+    catEl.innerHTML='';
+  } else {
+    catEl.innerHTML=`<div class="settings-card" style="margin-bottom:8px;">
+      ${catKeys.map(c=>`
+        <div class="settings-row">
+          <span class="settings-label">${c} <span style="font-size:0.7rem;color:var(--muted)">(${cats[c].count})</span></span>
+          <span class="settings-value" style="color:${cats[c].income>0?'var(--green)':'var(--red)'}">
+            ${cats[c].income>0?'+'+yen(cats[c].income):''}
+            ${cats[c].expense>0?' -'+yen(cats[c].expense):''}
+          </span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+}
+
+// ===== MINI CHART =====
+function renderMiniChart(){
+  const data=getData();
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date();
+    d.setMonth(d.getMonth()-i);
+    months.push(d.toISOString().substring(0,7));
+  }
+  const maxVal=Math.max(1,...months.map(m=>{
+    const inc=data.filter(t=>t.date.startsWith(m)&&t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=data.filter(t=>t.date.startsWith(m)&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    return Math.max(inc,exp);
+  }));
+  const chart=document.getElementById('mini-chart');
+  chart.innerHTML=months.map(m=>{
+    const inc=data.filter(t=>t.date.startsWith(m)&&t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=data.filter(t=>t.date.startsWith(m)&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    const iH=Math.round(inc/maxVal*75);
+    const eH=Math.round(exp/maxVal*75);
+    const label=new Date(m+'-01').toLocaleDateString('en',{month:'short'});
+    return`<div class="bar-group">
+      <div class="bar-wrap">
+        <div class="bar income-bar" style="height:${iH}px"></div>
+        <div class="bar expense-bar" style="height:${eH}px"></div>
+      </div>
+      <div class="bar-label">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+  const data=getData();
+  if(!data.length){showToast('No data to export');return;}
+  const header='Date,Type,Amount,Description,Category,Notes\n';
+  const rows=data.map(t=>
+    `${t.date},${t.type},${t.amount},"${t.desc}","${t.category||''}","${t.notes||''}"`
+  ).join('\n');
+  const blob=new Blob([header+rows],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`merigo-tresses-${today()}.csv`;
+  a.click();
+  showToast('CSV exported!');
+}
+
+function copyForSheets(){
+  const data=getData();
+  if(!data.length){showToast('No data to copy');return;}
+  const header='Date\tType\tAmount\tDescription\tCategory\tNotes\n';
+  const rows=data.map(t=>`${t.date}\t${t.type}\t${t.amount}\t${t.desc}\t${t.category||''}\t${t.notes||''}`).join('\n');
+  navigator.clipboard.writeText(header+rows).then(()=>{
+    showToast('Copied! Paste into Google Sheets');
+  });
+}
+
+// ===== GOAL =====
+function saveGoal(){
+  const g=parseFloat(document.getElementById('goal-income').value)||80000;
+  localStorage.setItem('mt_goal',g);
+  document.getElementById('annual-goal-display').textContent='¥'+(g*12).toLocaleString();
+}
+function loadGoal(){
+  const g=localStorage.getItem('mt_goal')||80000;
+  document.getElementById('goal-income').value=g;
+  document.getElementById('annual-goal-display').textContent='¥'+(parseFloat(g)*12).toLocaleString();
+}
+
+// ===== CLEAR =====
+function clearAllData(){
+  if(!confirm('Delete ALL transactions? This cannot be undone!')) return;
+  localStorage.removeItem('mt_transactions');
+  refreshDashboard();
+  refreshLog();
+  renderMiniChart();
+  showToast('All data cleared');
+}
+
+// ===== TOAST =====
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
